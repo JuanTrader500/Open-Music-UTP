@@ -59,3 +59,14 @@ python -m scripts.demo_youtube --provider youtube playlist <ID_DE_LA_PLAYLIST>
 
 ###  Flujo de Llamada en la Demo
 `demo_youtube.py` $\rightarrow$ `build_provider_factory()` $\rightarrow$ `YouTubeProviderFactory` $\rightarrow$ `YouTubeSearchClient` $\rightarrow$ **API YouTube**
+
+
+
+## Ejemplos para la demostracion:
+
+Busqueda con nombre exato:
+    - python -m scripts.demo_youtube --provider youtube search "romantika brutalismus 3000"
+
+Test del youtube engine serch 
+
+    - python -m scripts.demo_youtube --provider youtube search "brutalismus 3000 romanticas"
