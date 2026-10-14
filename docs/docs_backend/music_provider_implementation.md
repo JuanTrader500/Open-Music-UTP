@@ -2,7 +2,7 @@
 
 Este módulo implementa la capa de acceso a datos para el catálogo de música, utilizando el patrón de diseño **Abstract Factory**. El objetivo principal es desacoplar la lógica de negocio del sistema de la API específica del proveedor de música (en este caso, YouTube), permitiendo cambiar de proveedor sin afectar el resto de la aplicación.
 
-## 🎯 Justificación del uso de Abstract Factory
+##  Justificación del uso de Abstract Factory
 
 Se ha seleccionado el patrón **Abstract Factory** debido a que el sistema requiere una **familia de productos relacionados** (Búsqueda, Detalles y Playlists) que deben ser coherentes entre sí. 
 
@@ -11,7 +11,19 @@ Si el sistema utilizara clases concretas, correríamos el riesgo de mezclar, por
 2. **Desacoplamiento Total**: El código de negocio (`MusicProvider`) no sabe qué proveedor está usando; solo sabe que tiene un objeto que cumple con la interfaz de búsqueda y otro con la de detalles.
 3. **Escalabilidad**: Agregar un nuevo proveedor (ej. Spotify, SoundCloud) solo requiere implementar una nueva fábrica y sus productos, sin modificar una sola línea de la lógica de negocio.
 
-## 🔄 Flujo de Funcionamiento Actual
+### 🚀 Ejemplo de Extensibilidad: Enriquecimiento con Spotify
+
+Para demostrar la potencia de esta arquitectura, consideremos un caso de uso futuro: **Recolección de Metadatos Profesionales**.
+
+Si el sistema necesita guardar en la base de datos información más detallada (como el álbum oficial, el sello discográfico o el género exacto) que YouTube no proporciona con precisión, podemos implementar un flujo híbrido:
+
+1. **Búsqueda (YouTube)**: Se utiliza la `YouTubeProviderFactory` para encontrar la canción y obtener el ID del video.
+2. **Enriquecimiento (Spotify)**: El sistema instancia una `SpotifyProviderFactory` y utiliza su `VideoDetailsClient` para buscar la misma canción por nombre y traer metadatos de alta calidad desde la API de Spotify.
+3. **Persistencia**: Se guarda la data de Spotify en la base de datos, manteniendo la capacidad de reproducir el video de YouTube.
+
+Esto es posible gracias a que el sistema depende de la **interfaz abstracta** `VideoDetailsClient` y no de una clase concreta. Así, podemos intercambiar el origen de los metadatos sin modificar la lógica de guardado en la base de datos.
+
+##  Flujo de Funcionamiento Actual
 
 El flujo de datos desde que se solicita una canción hasta que se obtienen los resultados es el siguiente:
 
