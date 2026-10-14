@@ -2,14 +2,30 @@
 
 Este módulo implementa la capa de acceso a datos para el catálogo de música, utilizando el patrón de diseño **Abstract Factory**. El objetivo principal es desacoplar la lógica de negocio del sistema de la API específica del proveedor de música (en este caso, YouTube), permitiendo cambiar de proveedor sin afectar el resto de la aplicación.
 
-##  Arquitectura: Abstract Factory
+## 🎯 Justificación del uso de Abstract Factory
 
-El sistema define una "familia" de productos relacionados (clientes de búsqueda, detalles y playlists). En lugar de instanciar clases concretas de YouTube directamente en el código, el sistema utiliza una **Fábrica Abstracta** que garantiza que todos los productos creados sean compatibles entre sí.
+Se ha seleccionado el patrón **Abstract Factory** debido a que el sistema requiere una **familia de productos relacionados** (Búsqueda, Detalles y Playlists) que deben ser coherentes entre sí. 
 
-### Beneficios de este enfoque:
-- **Intercambiabilidad**: Podemos cambiar entre `youtube` y `simulated` mediante una variable de entorno.
-- **Mantenibilidad**: Si YouTube cambia su API, solo se modifican los archivos en la carpeta `youtube/`, sin tocar la lógica de negocio.
-- **Testabilidad**: Permite usar el proveedor `simulated` para pruebas unitarias sin gastar cuotas de la API de YouTube.
+Si el sistema utilizara clases concretas, correríamos el riesgo de mezclar, por ejemplo, un cliente de búsqueda de YouTube con un cliente de detalles de Spotify, lo que rompería la aplicación. La Fábrica Abstracta garantiza que:
+1. **Consistencia**: Si se elige el proveedor de YouTube, todos los clientes creados pertenecerán a la familia de YouTube.
+2. **Desacoplamiento Total**: El código de negocio (`MusicProvider`) no sabe qué proveedor está usando; solo sabe que tiene un objeto que cumple con la interfaz de búsqueda y otro con la de detalles.
+3. **Escalabilidad**: Agregar un nuevo proveedor (ej. Spotify, SoundCloud) solo requiere implementar una nueva fábrica y sus productos, sin modificar una sola línea de la lógica de negocio.
+
+## 🔄 Flujo de Funcionamiento Actual
+
+El flujo de datos desde que se solicita una canción hasta que se obtienen los resultados es el siguiente:
+
+1. **Carga de Configuración**: El sistema lee la variable `MUSIC_PROVIDER` del archivo `.env` a través de `config.py`.
+2. **Selección de la Fábrica**: `registry.py` actúa como un despachador que, basándose en el nombre del proveedor, instancia la fábrica concreta correspondiente (ej. `YouTubeProviderFactory`).
+3. **Creación de Clientes**: La fábrica concreta crea los tres productos especializados:
+    - `SearchClient` $\rightarrow$ para obtener IDs de videos.
+    - `VideoDetailsClient` $\rightarrow$ para obtener metadatos (título, duración).
+    - `PlaylistClient` $\rightarrow$ para leer listas de reproducción.
+4. **Orquestación de Lógica (`MusicProvider`)**: 
+    - Llama al `SearchClient` para obtener una lista de IDs.
+    - Pasa esos IDs al `VideoDetailsClient` para "hidratar" los resultados con información real.
+    - Filtra los resultados para asegurar que los videos sean **embebibles** (reproducibles en la app).
+5. **Acceso Externo**: Finalmente, los clientes concretos ejecutan las peticiones HTTP a la API de YouTube v3 y devuelven la respuesta procesada.
 
 ---
 
