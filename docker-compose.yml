@@ -1,0 +1,87 @@
+# =============================================================================
+# Open Music UTP · docker-compose.yml
+# Servicios actuales: PostgreSQL 16 (db) y pgAdmin 4 (pgadmin)
+# Uso:  docker compose up -d
+# Requiere un archivo .env junto a este archivo (ver .env.example)
+# =============================================================================
+name: open-music-utp
+
+# Rotación de logs: evita que los registros de los contenedores crezcan sin límite
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Base de datos
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: open-music-db
+    restart: unless-stopped
+    stop_grace_period: 30s              # tiempo para un apagado limpio de PostgreSQL
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Define POSTGRES_DB en el archivo .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Define POSTGRES_USER en el archivo .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en el archivo .env}
+    ports:
+      - "127.0.0.1:5433:5432"           # solo accesible desde tu equipo
+    volumes:
+      # Datos de PostgreSQL: sobreviven a stop, down y recreación del contenedor
+      - postgres_data:/var/lib/postgresql/data
+      # Se ejecuta UNA sola vez, cuando el volumen está vacío (solo lectura)
+      - ./dataBase/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      # -h 127.0.0.1 fuerza TCP: durante la inicialización PostgreSQL solo escucha
+      # por socket, así que el contenedor no se marca "healthy" hasta terminar el schema
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - open-music-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # Administrador web de la base de datos
+  # ---------------------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:${PGADMIN_TAG:-latest}
+    container_name: open-music-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?Define PGADMIN_DEFAULT_EMAIL en el archivo .env}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Define PGADMIN_DEFAULT_PASSWORD en el archivo .env}
+    ports:
+      - "127.0.0.1:8081:80"             # http://localhost:8081
+    volumes:
+      # Sesiones, servidores guardados, preferencias y configuración de pgAdmin
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy      # arranca cuando la base ya terminó de inicializarse
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:80/misc/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - open-music-net
+    logging: *default-logging
+
+# -----------------------------------------------------------------------------
+# Volúmenes con nombre fijo: no dependen del nombre de la carpeta del proyecto
+# -----------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    name: open-music-postgres-data
+  pgadmin_data:
+    name: open-music-pgadmin-data
+
+networks:
+  open-music-net:
+    driver: bridge
