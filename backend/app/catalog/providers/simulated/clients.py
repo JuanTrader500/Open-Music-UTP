@@ -17,7 +17,7 @@ class SimulatedCatalog:
     """Estado compartido por los tres productos simulados."""
 
     def __init__(self) -> None:
-        self.tracks = {t.video_id: t for t in SIMULATED_TRACKS}
+        self.tracks = {t.track_id: t for t in SIMULATED_TRACKS}
         self.playlists = dict(SIMULATED_PLAYLISTS)
 
 
@@ -28,7 +28,7 @@ class SimulatedSearchClient(SearchClient):
     def search(self, query: str, max_results: int | None = None) -> list[str]:
         needle = validate_query(query).lower()
         hits = [
-            t.video_id
+            t.track_id
             for t in self._catalog.tracks.values()
             if needle in t.title.lower() or needle in t.channel_title.lower()
         ]
