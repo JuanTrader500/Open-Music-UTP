@@ -35,7 +35,7 @@ class ListeningRecord:
     def clone(self, **overrides) -> "ListeningRecord":
         """Prototype: copia profunda con cambios puntuales.
 
-        Ejemplo: prototipo.clone(user_id="u2", video_id="sim_rock_02")
+        Ejemplo: prototipo.clone(user_id="u2", track_id="sim_rock_02")
         """
         data = {
             "user_id": self.user_id,

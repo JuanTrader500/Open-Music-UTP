@@ -21,7 +21,7 @@ def _print_tracks(tracks) -> None:
     for i, t in enumerate(tracks, start=1):
         mins, secs = divmod(t.duration_s, 60)
         print(f"{i:>2}. {t.title} — {t.channel_title} [{mins}:{secs:02d}] "
-              f"({t.view_count:,} vistas) id={t.video_id}")
+              f"({t.view_count:,} vistas) id={t.track_id}")
 
 
 def main() -> None:

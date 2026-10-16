@@ -20,7 +20,7 @@ def test_esc01_busqueda_exitosa():
     # When busca "cafeteros"
     tracks = provider.search_tracks("cafeteros")
     # Then recibe orden + metadatos
-    assert [t.video_id for t in tracks] == ["sim_rock_01", "sim_rock_02"]
+    assert [t.track_id for t in tracks] == ["sim_rock_01", "sim_rock_02"]
     assert all(t.title and t.duration_s >= 0 for t in tracks)
 
 
@@ -69,7 +69,7 @@ def test_esc04_escucha_y_clon():
     # Given 12 s / Then omitida (RN-005)
     assert ListeningRecord("u1", "sim_rock_02", 12).skipped is True
     # When se clona para simulación / Then independiente
-    clone = rec.clone(user_id="u2", video_id="sim_rock_02")
+    clone = rec.clone(user_id="u2", track_id="sim_rock_02")
     assert clone.user_id == "u2" and clone.seconds_listened == 187
 
 

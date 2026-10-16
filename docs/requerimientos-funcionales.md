@@ -9,7 +9,7 @@ con el que se resuelven. Cada escenario usa formato `Given/When/Then`
 **Módulo:** `catalog/providers` · **RN:** RN-009 (género), RN-012 (solo embebibles)
 **RNF:** RNF-003 (clave solo backend), RNF-023/024 (tolerancia a fallos y cuota), RNF-033 (pruebas sin cuota)
 
-Crea objetos `TrackMetadata` (`video_id`, título, artista, duración, vistas, embebible)
+Crea objetos `TrackMetadata` (`track_id`, título, artista, duración, vistas, embebible)
 a partir de una familia de clientes del proveedor.
 
 **Escenario 1.1 — búsqueda exitosa (happy path)**

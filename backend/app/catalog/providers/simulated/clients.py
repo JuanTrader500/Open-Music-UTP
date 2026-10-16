@@ -39,13 +39,13 @@ class SimulatedVideoDetailsClient(VideoDetailsClient):
     def __init__(self, catalog: SimulatedCatalog) -> None:
         self._catalog = catalog
 
-    def get_details(self, video_ids: Sequence[str]) -> list[TrackMetadata]:
-        return [self._catalog.tracks[v] for v in dict.fromkeys(video_ids) if v in self._catalog.tracks]
+    def get_details(self, track_ids: Sequence[str]) -> list[TrackMetadata]:
+        return [self._catalog.tracks[v] for v in dict.fromkeys(track_ids) if v in self._catalog.tracks]
 
 
 class SimulatedPlaylistClient(PlaylistClient):
     def __init__(self, catalog: SimulatedCatalog) -> None:
         self._catalog = catalog
 
-    def list_video_ids(self, playlist_id: str, max_items: int = 50) -> list[str]:
+    def list_track_ids(self, playlist_id: str, max_items: int = 50) -> list[str]:
         return self._catalog.playlists.get(playlist_id, [])[:max_items]
