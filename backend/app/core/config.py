@@ -12,6 +12,8 @@ from typing import Literal
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
+from app.core.singleton import SingletonMeta
+
 
 class Settings(BaseModel):
     """Configuración validada de la aplicación."""
@@ -39,4 +41,28 @@ class Settings(BaseModel):
 
 @lru_cache
 def get_settings() -> Settings:
+    """Singleton funcional: misma instancia en todo el proceso (ESC-05)."""
     return Settings.from_env()
+
+
+class AppRuntime(metaclass=SingletonMeta):
+    """Singleton OO (ESC-05): misma instancia vía SingletonMeta.
+
+    Por la metaclase, __init__ solo se ejecuta en la primera creación;
+    siguientes AppRuntime() devuelven la misma instancia sin re-init.
+    Usa get_settings() como valor por defecto (singleton funcional).
+    """
+
+    def __init__(self, settings: Settings | None = None) -> None:
+        self.settings: Settings = settings or get_settings()
+
+    def reload(self, settings: Settings) -> None:
+        self.settings = settings
+
+
+def get_runtime(settings: Settings | None = None) -> AppRuntime:
+    """Acceso global único al runtime (Singleton)."""
+    rt = AppRuntime()
+    if settings is not None:
+        rt.reload(settings)
+    return rt
