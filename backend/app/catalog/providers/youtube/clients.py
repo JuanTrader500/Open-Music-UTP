@@ -77,8 +77,8 @@ class YouTubeVideoDetailsClient(VideoDetailsClient):
     def __init__(self, resource: Any) -> None:
         self._resource = resource
 
-    def get_details(self, video_ids: Sequence[str]) -> list[TrackMetadata]:
-        unique_ids = list(dict.fromkeys(video_ids))
+    def get_details(self, track_ids: Sequence[str]) -> list[TrackMetadata]:
+        unique_ids = list(dict.fromkeys(track_ids))
         tracks: list[TrackMetadata] = []
         for start in range(0, len(unique_ids), _MAX_BATCH):
             chunk = unique_ids[start : start + _MAX_BATCH]
@@ -97,20 +97,20 @@ class YouTubePlaylistClient(PlaylistClient):
     def __init__(self, resource: Any) -> None:
         self._resource = resource
 
-    def list_video_ids(self, playlist_id: str, max_items: int = 50) -> list[str]:
-        video_ids: list[str] = []
+    def list_track_ids(self, playlist_id: str, max_items: int = 50) -> list[str]:
+        track_ids: list[str] = []
         page_token: str | None = None
-        while len(video_ids) < max_items:
+        while len(track_ids) < max_items:
             params: dict[str, Any] = {
                 "part": "contentDetails",
                 "playlistId": playlist_id,
-                "maxResults": min(50, max_items - len(video_ids)),
+                "maxResults": min(50, max_items - len(track_ids)),
             }
             if page_token:
                 params["pageToken"] = page_token
             response = execute_request(self._resource.playlistItems().list(**params))
-            video_ids.extend(i["contentDetails"]["videoId"] for i in response.get("items", []))
+            track_ids.extend(i["contentDetails"]["videoId"] for i in response.get("items", []))
             page_token = response.get("nextPageToken")
             if not page_token:
                 break
-        return video_ids[:max_items]
+        return track_ids[:max_items]

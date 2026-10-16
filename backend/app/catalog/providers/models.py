@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 class TrackMetadata(BaseModel):
     """Una canción con los metadatos que exige el SRS (ver entidad `tracks`)."""
 
-    video_id: str
+    track_id: str
     title: str
     channel_title: str  # se usa como "artista" (RF-010)
     duration_s: int = Field(ge=0)

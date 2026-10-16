@@ -37,7 +37,7 @@ def test_esc01_consulta_invalida_no_gasta_cuota():
 def test_esc01_playlist_filtra_no_embebible():
     provider = MusicProvider(SimulatedProviderFactory())
     tracks = provider.import_playlist("PL_SIM_SALSA")
-    assert [t.video_id for t in tracks] == ["sim_salsa_01", "sim_salsa_02"]
+    assert [t.track_id for t in tracks] == ["sim_salsa_01", "sim_salsa_02"]
 
 
 def test_esc02_crear_playlist():

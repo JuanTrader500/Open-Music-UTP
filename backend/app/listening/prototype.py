@@ -14,7 +14,7 @@ SKIPPED_THRESHOLD_S = 30  # RN-005
 @dataclass
 class ListeningRecord:
     user_id: str
-    video_id: str
+    track_id: str
     seconds_listened: int
     genre: str = "sin clasificar"
     artist: str = ""
@@ -22,8 +22,8 @@ class ListeningRecord:
     def __post_init__(self) -> None:
         if not self.user_id.strip():
             raise ValueError("user_id obligatorio (RF-023)")
-        if not self.video_id.strip():
-            raise ValueError("video_id obligatorio (RF-023)")
+        if not self.track_id.strip():
+            raise ValueError("track_id obligatorio (RF-023)")
         if self.seconds_listened < 0:
             raise ValueError("seconds_listened no puede ser negativo")
 
@@ -39,7 +39,7 @@ class ListeningRecord:
         """
         data = {
             "user_id": self.user_id,
-            "video_id": self.video_id,
+            "track_id": self.track_id,
             "seconds_listened": self.seconds_listened,
             "genre": self.genre,
             "artist": self.artist,
@@ -47,7 +47,7 @@ class ListeningRecord:
         data.update(overrides)
         return ListeningRecord(
             user_id=data["user_id"],
-            video_id=data["video_id"],
+            track_id=data["track_id"],
             seconds_listened=data["seconds_listened"],
             genre=data["genre"],
             artist=data["artist"],

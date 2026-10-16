@@ -36,23 +36,23 @@ class SearchClient(ABC):
 
     @abstractmethod
     def search(self, query: str, max_results: int | None = None) -> list[str]:
-        """Devuelve los `video_id` que coinciden con la consulta, en orden."""
+        """Devuelve los `track_id` que coinciden con la consulta, en orden."""
 
 
 class VideoDetailsClient(ABC):
     """Producto abstracto B: metadatos de canciones por lotes."""
 
     @abstractmethod
-    def get_details(self, video_ids: Sequence[str]) -> list[TrackMetadata]:
-        """Devuelve los metadatos de los `video_id` indicados."""
+    def get_details(self, track_ids: Sequence[str]) -> list[TrackMetadata]:
+        """Devuelve los metadatos de los `track_id` indicados."""
 
 
 class PlaylistClient(ABC):
     """Producto abstracto C: lectura de playlists semilla."""
 
     @abstractmethod
-    def list_video_ids(self, playlist_id: str, max_items: int = 50) -> list[str]:
-        """Devuelve los `video_id` de una playlist, en orden."""
+    def list_track_ids(self, playlist_id: str, max_items: int = 50) -> list[str]:
+        """Devuelve los `track_id` de una playlist, en orden."""
 
 
 # ------------------------------- Fábrica abstracta --------------------------------

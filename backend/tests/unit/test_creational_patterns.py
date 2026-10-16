@@ -78,8 +78,8 @@ class TestListeningPrototype:
 
     def test_clone_is_independent(self):
         proto = ListeningRecord("u1", "sim_rock_01", 180, genre="rock", artist="Art")
-        clone = proto.clone(user_id="u2", video_id="sim_rock_02")
-        assert (clone.user_id, clone.video_id, clone.seconds_listened) == ("u2", "sim_rock_02", 180)
+        clone = proto.clone(user_id="u2", track_id="sim_rock_02")
+        assert (clone.user_id, clone.track_id, clone.seconds_listened) == ("u2", "sim_rock_02", 180)
         assert clone.genre == "rock"
         clone.seconds_listened = 5
         assert proto.seconds_listened == 180  # no aliasing

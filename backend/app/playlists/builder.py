@@ -59,13 +59,13 @@ class PlaylistBuilder:
         self._description = description.strip()
         return self
 
-    def add_track(self, video_id: str) -> "PlaylistBuilder":
-        vid = video_id.strip()
-        if not vid:
-            raise ValueError("video_id vacío")
+    def add_track(self, track_id: str) -> "PlaylistBuilder":
+        tid = track_id.strip()
+        if not tid:
+            raise ValueError("track_id vacío")
         if len(self._track_ids) >= MAX_TRACKS:
             raise ValueError(f"Máximo {MAX_TRACKS} pistas por playlist (RN-010)")
-        self._track_ids.append(vid)
+        self._track_ids.append(tid)
         return self
 
     def mark_favorite(self, favorite: bool = True) -> "PlaylistBuilder":

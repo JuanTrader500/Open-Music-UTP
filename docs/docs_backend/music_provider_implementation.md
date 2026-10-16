@@ -11,7 +11,7 @@ Si el sistema utilizara clases concretas, correríamos el riesgo de mezclar, por
 2. **Desacoplamiento Total**: El código de negocio (`MusicProvider`) no sabe qué proveedor está usando; solo sabe que tiene un objeto que cumple con la interfaz de búsqueda y otro con la de detalles.
 3. **Escalabilidad**: Agregar un nuevo proveedor (ej. Spotify, SoundCloud) solo requiere implementar una nueva fábrica y sus productos, sin modificar una sola línea de la lógica de negocio.
 
-### 🚀 Ejemplo de Extensibilidad: Enriquecimiento con Spotify
+###  Ejemplo de Extensibilidad: Enriquecimiento con Spotify
 
 Para demostrar la potencia de esta arquitectura, consideremos un caso de uso futuro: **Recolección de Metadatos Profesionales**.
 
