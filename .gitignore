@@ -10,3 +10,7 @@ dist/
 .vscode/
 *.egg-info/
 opencode/
+dataBase/*
+!dataBase/Diagrama_DB.png
+
+

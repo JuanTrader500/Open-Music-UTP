@@ -18,17 +18,17 @@ class MusicProvider:
 
     def search_tracks(self, query: str, max_results: int | None = None) -> list[TrackMetadata]:
         """Busca, trae detalles y descarta no embebibles (RN-012)."""
-        video_ids = self._search.search(query, max_results)
-        return self._hydrate(video_ids)
+        track_ids = self._search.search(query, max_results)
+        return self._hydrate(track_ids)
 
     def import_playlist(self, playlist_id: str, max_items: int = 50) -> list[TrackMetadata]:
         """Lee una playlist semilla y devuelve sus canciones reproducibles."""
-        video_ids = self._playlists.list_video_ids(playlist_id, max_items)
-        return self._hydrate(video_ids)
+        track_ids = self._playlists.list_track_ids(playlist_id, max_items)
+        return self._hydrate(track_ids)
 
-    def _hydrate(self, video_ids: list[str]) -> list[TrackMetadata]:
-        if not video_ids:
+    def _hydrate(self, track_ids: list[str]) -> list[TrackMetadata]:
+        if not track_ids:
             return []
-        by_id = {t.video_id: t for t in self._details.get_details(video_ids)}
-        ordered = [by_id[v] for v in video_ids if v in by_id]  # conserva el orden de origen
+        by_id = {t.track_id: t for t in self._details.get_details(track_ids)}
+        ordered = [by_id[v] for v in track_ids if v in by_id]  # conserva el orden de origen
         return [t for t in ordered if t.is_embeddable]

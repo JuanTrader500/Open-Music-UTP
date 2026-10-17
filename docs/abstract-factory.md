@@ -17,8 +17,8 @@ classDiagram
     class YouTubeProviderFactory
     class SimulatedProviderFactory
     class SearchClient { <<abstract>> +search(query, max_results) }
-    class VideoDetailsClient { <<abstract>> +get_details(video_ids) }
-    class PlaylistClient { <<abstract>> +list_video_ids(playlist_id, max_items) }
+    class VideoDetailsClient { <<abstract>> +get_details(track_ids) }
+    class PlaylistClient { <<abstract>> +list_track_ids(playlist_id, max_items) }
     class YouTubeSearchClient
     class YouTubeVideoDetailsClient
     class YouTubePlaylistClient
