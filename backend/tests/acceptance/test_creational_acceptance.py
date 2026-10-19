@@ -3,6 +3,7 @@
 Trazabilidad: docs/requerimientos-funcionales.md (ESC-01 a ESC-05).
 ESC-01 usa el proveedor simulado (RNF-033: sin cuota).
 """
+
 from __future__ import annotations
 
 from app.auth.factory import GuestCreator, RegisteredCreator
@@ -16,7 +17,7 @@ from app.playlists.builder import PlaylistBuilder
 
 def test_esc01_busqueda_exitosa():
     # Given un invitado con proveedor simulado
-    provider = MusicProvider(SimulatedProviderFactory())
+    provider = MusicProvider(SimulatedProviderFactory(Settings()))
     # When busca "cafeteros"
     tracks = provider.search_tracks("cafeteros")
     # Then recibe orden + metadatos
@@ -25,7 +26,7 @@ def test_esc01_busqueda_exitosa():
 
 
 def test_esc01_consulta_invalida_no_gasta_cuota():
-    provider = MusicProvider(SimulatedProviderFactory())
+    provider = MusicProvider(SimulatedProviderFactory(Settings()))
     try:
         provider.search_tracks("a")
     except InvalidQueryError:
@@ -35,7 +36,7 @@ def test_esc01_consulta_invalida_no_gasta_cuota():
 
 
 def test_esc01_playlist_filtra_no_embebible():
-    provider = MusicProvider(SimulatedProviderFactory())
+    provider = MusicProvider(SimulatedProviderFactory(Settings()))
     tracks = provider.import_playlist("PL_SIM_SALSA")
     assert [t.track_id for t in tracks] == ["sim_salsa_01", "sim_salsa_02"]
 
@@ -43,9 +44,8 @@ def test_esc01_playlist_filtra_no_embebible():
 def test_esc02_crear_playlist():
     # Given usuario registrado / When crea playlist / Then queda con 2 pistas
     pl = (
-        PlaylistBuilder("u1")
+        PlaylistBuilder("u1", max_name_length=80, max_tracks=500)
         .with_name("Salsa clásica")
-        .with_description("Para el fin de semana")
         .add_track("sim_salsa_01")
         .add_track("sim_salsa_02")
         .build()
@@ -55,7 +55,7 @@ def test_esc02_crear_playlist():
 
 def test_esc03_registro_e_invitado():
     # Given visitante / When se registra / Then queda registrado con hash
-    user = RegisteredCreator("est@utp.edu.co", "clave1234").create_user()
+    user = RegisteredCreator("est@utp.edu.co", "clave1234", min_password_length=8).create_user()
     assert user.kind == "registered" and user.password_hashed
     # When continúa como invitado / Then permisos limitados
     guest = GuestCreator().create_user()
@@ -65,9 +65,9 @@ def test_esc03_registro_e_invitado():
 def test_esc04_escucha_y_clon():
     # Given 187 s de rock / When se registra / Then no omitida
     rec = ListeningRecord("u1", "sim_rock_01", 187, genre="rock")
-    assert rec.skipped is False
+    assert rec.is_skipped(30) is False
     # Given 12 s / Then omitida (RN-005)
-    assert ListeningRecord("u1", "sim_rock_02", 12).skipped is True
+    assert ListeningRecord("u1", "sim_rock_02", 12).is_skipped(30) is True
     # When se clona para simulación / Then independiente
     clone = rec.clone(user_id="u2", track_id="sim_rock_02")
     assert clone.user_id == "u2" and clone.seconds_listened == 187

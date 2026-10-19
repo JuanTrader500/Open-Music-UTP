@@ -1,4 +1,5 @@
 """Productos concretos de la familia simulada (sin red, deterministas)."""
+
 from __future__ import annotations
 
 from collections.abc import Sequence
@@ -22,17 +23,19 @@ class SimulatedCatalog:
 
 
 class SimulatedSearchClient(SearchClient):
-    def __init__(self, catalog: SimulatedCatalog) -> None:
+    def __init__(self, catalog: SimulatedCatalog, min_chars: int, default_max_results: int) -> None:
         self._catalog = catalog
+        self._min_chars = min_chars
+        self._default_max_results = default_max_results
 
     def search(self, query: str, max_results: int | None = None) -> list[str]:
-        needle = validate_query(query).lower()
+        needle = validate_query(query, self._min_chars).lower()
         hits = [
             t.track_id
             for t in self._catalog.tracks.values()
             if needle in t.title.lower() or needle in t.channel_title.lower()
         ]
-        return hits[: max_results or 20]
+        return hits[: max_results or self._default_max_results]
 
 
 class SimulatedVideoDetailsClient(VideoDetailsClient):
@@ -40,7 +43,9 @@ class SimulatedVideoDetailsClient(VideoDetailsClient):
         self._catalog = catalog
 
     def get_details(self, track_ids: Sequence[str]) -> list[TrackMetadata]:
-        return [self._catalog.tracks[v] for v in dict.fromkeys(track_ids) if v in self._catalog.tracks]
+        return [
+            self._catalog.tracks[v] for v in dict.fromkeys(track_ids) if v in self._catalog.tracks
+        ]
 
 
 class SimulatedPlaylistClient(PlaylistClient):

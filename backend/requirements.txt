@@ -1,13 +1,8 @@
-#Python 3.12
-fastapi
-uvicorn[standard]
-pydantic
-python-dotenv
-google-api-python-client
-pytest
-
-
-# sqlalchemy, psycopg[binary], alembic   (base de datos y migraciones, TBD-02)
-# argon2-cffi o bcrypt                   (hash de contraseñas, RNF-026)
-# httpx                                  (pruebas de integración de endpoints)
-# pytest-cov                             (cobertura >= 70 %, RNF-033)
+fastapi==0.146.0
+uvicorn[standard]==0.54.0
+pydantic==2.14.1
+python-dotenv==1.2.4
+google-api-python-client==2.201.0
+SQLAlchemy==2.0.55
+psycopg[binary]==3.3.6
+alembic==1.20.0

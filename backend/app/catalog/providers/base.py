@@ -9,6 +9,7 @@ Familia de productos relacionados que necesita el catálogo:
 concreta (YouTube, simulada) entrega productos que SÍ son compatibles entre sí.
 El código cliente (`MusicProvider`) solo depende de estas abstracciones.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -17,16 +18,16 @@ from collections.abc import Sequence
 from app.catalog.providers.models import TrackMetadata
 from app.core.exceptions import InvalidQueryError
 
-MIN_QUERY_LENGTH = 2  # RF-010
 
+def validate_query(query: str, min_chars: int) -> str:
+    """Valida y normaliza la consulta antes de gastar cuota (RF-010).
 
-def validate_query(query: str) -> str:
-    """Valida y normaliza la consulta antes de gastar cuota (RF-010)."""
+    `min_chars` llega desde la configuración (`search_min_chars`); así no hay
+    constantes de negocio en el código.
+    """
     cleaned = query.strip()
-    if len(cleaned) < MIN_QUERY_LENGTH:
-        raise InvalidQueryError(
-            f"La búsqueda debe tener al menos {MIN_QUERY_LENGTH} caracteres."
-        )
+    if len(cleaned) < min_chars:
+        raise InvalidQueryError(f"La búsqueda debe tener al menos {min_chars} caracteres.")
     return cleaned
 
 

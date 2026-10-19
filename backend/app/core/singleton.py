@@ -3,6 +3,7 @@
 Garantiza una única instancia de la configuración / estado global en el proceso.
 Se usa junto a `get_settings()` (lru_cache) en `core/config.py`.
 """
+
 from __future__ import annotations
 
 

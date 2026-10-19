@@ -1,4 +1,5 @@
 """Conversión de las respuestas JSON de YouTube a `TrackMetadata`."""
+
 from __future__ import annotations
 
 import re

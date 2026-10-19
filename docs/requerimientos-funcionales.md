@@ -43,20 +43,18 @@ Then solo se devuelven ["sim_salsa_01", "sim_salsa_02"]
 el cliente `MusicProvider` no conoce clases concretas (abierto/cerrado, R-02).
 
 ## ESC-02 · RF-013 Crear playlist
-**Módulo:** `playlists` · **RN:** RN-002 (límites por usuario), RN-003 (orden propio),
-RN-010 (máximo de pistas)
+**Módulo:** `playlists` · **RN:** RN-002 (las playlists del invitado viven en el navegador),
+RN-003 (las del registrado se guardan en la base de datos), RN-010 (máximo de pistas)
 **RNF:** RNF-015/016 (persistencia posterior, TBD-02)
 
-Crea objetos `Playlist` con construcción por pasos: nombre → descripción →
-agregar pistas → reordenar → marcar favorita.
+Crea objetos `Playlist` con construcción por pasos: nombre → agregar pistas → reordenar.
 
 **Escenario 2.1 — crear playlist válida**
 ```gherkin
 Given un usuario registrado sin playlists
-When crea la playlist "Salsa clásica" con descripción "Para el fin de semana"
+When crea la playlist "Salsa clásica"
   And agrega las pistas ["sim_salsa_01", "sim_salsa_02"]
 Then la playlist queda con 2 pistas en ese orden
-  And queda marcada como no favorita por defecto
 ```
 
 **Escenario 2.2 — nombre inválido**
@@ -83,7 +81,7 @@ evita constructor telescópico y permite `build()` solo si es válido.
 **Módulo:** `auth` · **RN:** RN-004 (cuenta única por correo), RN-015 (privacidad)
 **RNF:** RNF-026 (hash Argon2/bcrypt), RNF-027 (sesión con caducidad), RNF-029 (rate limit)
 
-Crea objetos `User`: invitado, registrado y administrador, con reglas distintas
+Crea objetos `User`: invitado y registrado, con reglas distintas
 de validación y permisos.
 
 **Escenario 3.1 — registro válido**
@@ -124,7 +122,7 @@ incluido el generador de simulación (RF-028).
 ```gherkin
 Given el usuario escuchó 187 s de "sim_rock_01" (rock)
 When se registra la escucha
-Then el registro queda con skipped = false
+Then el registro no se considera omitido (is_skipped(30) = false)
   And aporta 187 s al resumen de rock
 ```
 
@@ -132,7 +130,7 @@ Then el registro queda con skipped = false
 ```gherkin
 Given el usuario escuchó 12 s de "sim_rock_02"
 When se registra la escucha
-Then el registro queda con skipped = true (RN-005)
+Then el registro se considera omitido (is_skipped(30) = true, RN-005)
 ```
 
 **Escenario 4.3 — clonación para simulación**
@@ -156,15 +154,18 @@ Una sola instancia de configuración en todo el proceso.
 
 ```gherkin
 Given dos módulos que piden la configuración
-When ambos llaman a get_runtime() / get_settings()
-Then reciben la misma instancia
+When ambos llaman a get_settings()
+Then reciben la misma instancia de Settings
   And cambiar MUSIC_PROVIDER en un punto es visible en todos
 ```
 
-**Patrón:** Singleton (`SingletonMeta` + `get_settings()` con `lru_cache`).
-Ver `backend/app/core/singleton.py` y `backend/app/core/config.py:40-42`.
-**Por qué:** la configuración debe ser única y perezosa; `lru_cache` + metaclase
-evitan múltiples lecturas de `.env` y divergencias.
+**Patrón:** Singleton. El acceso real es `get_settings()` (con `lru_cache`);
+`SingletonMeta` + `AppRuntime` demuestran el patrón clásico y están aislados:
+ningún service ni router puede importarlos (lo verifica
+`tests/unit/test_architecture.py`). Ver `backend/app/core/singleton.py` y
+`backend/app/core/config.py`.
+**Por qué:** la configuración debe ser única y perezosa; `lru_cache` evita
+múltiples lecturas de `.env` y divergencias, y deja una sola puerta de acceso.
 
 ## Trazabilidad (RF → patrón → código → test)
 
