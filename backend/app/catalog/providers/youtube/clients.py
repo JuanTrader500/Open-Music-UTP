@@ -2,6 +2,7 @@
 
 Costos de cuota (SRS 1.3.4): search.list = 100 unidades, videos.list = 1.
 """
+
 from __future__ import annotations
 
 import json
@@ -56,7 +57,7 @@ class YouTubeSearchClient(SearchClient):
         self._settings = settings
 
     def search(self, query: str, max_results: int | None = None) -> list[str]:
-        cleaned = validate_query(query)
+        cleaned = validate_query(query, self._settings.search_min_chars)
         params: dict[str, Any] = {
             "part": "snippet",
             "q": cleaned,

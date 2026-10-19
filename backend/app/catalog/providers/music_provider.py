@@ -4,6 +4,7 @@
 hay YouTube o datos simulados. Orquesta el flujo búsqueda -> detalles (RF-010)
 y la importación de playlists semilla (RF-011).
 """
+
 from __future__ import annotations
 
 from app.catalog.providers.base import MusicProviderFactory

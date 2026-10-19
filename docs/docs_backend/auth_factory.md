@@ -1,8 +1,8 @@
 # Implementación del Factory Method para Usuarios (ESC-03)
 
-Este módulo implementa la creación de usuarios utilizando el patrón **Factory Method**. El objetivo es desacoplar la lógica de creación de usuarios de sus clases concretas, permitiendo que el sistema cree diferentes tipos de usuarios (Invitado, Registrado, Administrador) sin conocer los detalles de su instanciación.
+Este módulo implementa la creación de usuarios utilizando el patrón **Factory Method**. El objetivo es desacoplar la lógica de creación de usuarios de sus clases concretas, permitiendo que el sistema cree diferentes tipos de usuarios (Invitado, Registrado) sin conocer los detalles de su instanciación.
 
-## 🏗️ Arquitectura: Factory Method
+##  Arquitectura: Factory Method
 
 El sistema utiliza una clase creadora abstracta (`UserCreator`) que define el método fábrica `create_user()`. Cada tipo de usuario tiene su propia clase creadora concreta que implementa la lógica de validación y creación específica.
 
@@ -13,15 +13,15 @@ El sistema utiliza una clase creadora abstracta (`UserCreator`) que define el m�
 
 ---
 
-## 📂 Mapa de Archivos y Responsabilidades
+##  Mapa de Archivos y Responsabilidades
 
 | Archivo | Responsabilidad | Descripción |
 | :--- | :--- | :--- |
-| `app/auth/factory.py` | **Lógica de Creación** | Contiene la clase abstracta `UserCreator`, las implementaciones concretas (`GuestCreator`, `RegisteredCreator`, `AdminCreator`) y los modelos de usuario. |
+| `app/auth/factory.py` | **Lógica de Creación** | Contiene la clase abstracta `UserCreator`, las implementaciones concretas (`GuestCreator`, `RegisteredCreator`) y los modelos de usuario. |
 
 ---
 
-## 🚀 Flujo de Funcionamiento
+##  Flujo de Funcionamiento
 
 1. **Solicitud**: El sistema recibe una petición para crear un usuario de tipo `"registered"`.
 2. **Selección**: La función `creator_for("registered", ...)` devuelve una instancia de `RegisteredCreator`.
@@ -29,7 +29,7 @@ El sistema utiliza una clase creadora abstracta (`UserCreator`) que define el m�
 4. **Validación**: El creador normaliza el correo, verifica la longitud de la contraseña y comprueba la unicidad del correo electrónico.
 5. **Resultado**: Se devuelve un objeto `RegisteredUser` validado y listo para ser persistido.
 
-### 🛠️ Trazabilidad de Reglas de Negocio
+###  Trazabilidad de Reglas de Negocio
 - **RN-004 (Correo Único)**: Validada en `RegisteredCreator.create_user()`.
 - **RN-015 (Privacidad)**: Garantizada mediante el atributo `password_hashed` en el modelo `User`.
-- **RNF-026 (Seguridad)**: Validación de longitud mínima de contraseña en los creadores de usuarios registrados y admins.
+- **RNF-026 (Seguridad)**: Validación de longitud mínima de contraseña en el creador de usuarios registrados.

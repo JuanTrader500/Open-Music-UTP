@@ -5,6 +5,7 @@ Ejemplos (desde la carpeta backend/):
     python -m scripts.demo_youtube --provider youtube search "salsa clasica"
     python -m scripts.demo_youtube --provider youtube playlist PLxxxxxxxx
 """
+
 from __future__ import annotations
 
 import argparse
@@ -20,8 +21,10 @@ def _print_tracks(tracks) -> None:
         print("Sin resultados.")
     for i, t in enumerate(tracks, start=1):
         mins, secs = divmod(t.duration_s, 60)
-        print(f"{i:>2}. {t.title} — {t.channel_title} [{mins}:{secs:02d}] "
-              f"({t.view_count:,} vistas) id={t.track_id}")
+        print(
+            f"{i:>2}. {t.title} — {t.channel_title} [{mins}:{secs:02d}] "
+            f"({t.view_count:,} vistas) id={t.track_id}"
+        )
 
 
 def main() -> None:
@@ -39,8 +42,8 @@ def main() -> None:
         settings = settings.model_copy(update={"music_provider": args.provider})
 
     try:
-        factory = build_provider_factory(settings)      # fábrica concreta elegida
-        provider = MusicProvider(factory)               # el cliente solo ve la abstracta
+        factory = build_provider_factory(settings)  # fábrica concreta elegida
+        provider = MusicProvider(factory)  # el cliente solo ve la abstracta
         print(f"Proveedor activo: {factory.name} ({type(factory).__name__})\n")
         if args.command == "search":
             _print_tracks(provider.search_tracks(args.query))
