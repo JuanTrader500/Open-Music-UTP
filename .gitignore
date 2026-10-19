@@ -9,6 +9,7 @@ dist/
 .idea/
 .vscode/
 *.egg-info/
+/opencode
 /.opencode/
 dataBase/*.dump
 dataBase/*.backup
