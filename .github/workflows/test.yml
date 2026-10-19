@@ -7,8 +7,8 @@ on:
     branches: ["main", "Develop"]
 
 jobs:
-  backend:
-    name: backend
+  test:
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
