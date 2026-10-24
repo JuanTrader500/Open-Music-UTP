@@ -1,4 +1,5 @@
 """Fábrica concreta: familia de clientes de YouTube."""
+
 from __future__ import annotations
 
 from typing import Any

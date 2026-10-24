@@ -2,7 +2,7 @@
 
 Este módulo utiliza el patrón **Builder** para la creación de playlists. Debido a que una playlist tiene múltiples atributos opcionales y requiere validaciones incrementales, el Builder permite construir el objeto paso a paso, asegurando que el resultado final sea siempre válido.
 
-## 🏗️ Arquitectura: Builder
+##  Arquitectura: Builder
 
 El sistema separa la representación del objeto (`Playlist`) de su construcción (`PlaylistBuilder`). El Builder ofrece una interfaz fluida (Fluent Interface) que permite encadenar métodos para configurar la playlist.
 
@@ -13,7 +13,7 @@ El sistema separa la representación del objeto (`Playlist`) de su construcción
 
 ---
 
-## 📂 Mapa de Archivos y Responsabilidades
+##  Mapa de Archivos y Responsabilidades
 
 | Archivo | Responsabilidad | Descripción |
 | :--- | :--- | :--- |
@@ -21,18 +21,17 @@ El sistema separa la representación del objeto (`Playlist`) de su construcción
 
 ---
 
-## 🚀 Flujo de Funcionamiento
+##  Flujo de Funcionamiento
 
 El proceso de creación sigue un orden lógico:
 
-1. **Inicialización**: `PlaylistBuilder("user_123")` $\rightarrow$ Se define el dueño.
+1. **Inicialización**: `PlaylistBuilder("user_123", max_name_length=80, max_tracks=500)` $\rightarrow$ Se define el dueño y los límites.
 2. **Configuración**:
     - `.with_name("Mi Rock")` $\rightarrow$ Valida longitud y contenido.
-    - `.with_description("Favoritas")` $\rightarrow$ Asigna descripción.
     - `.add_track("track_01")` $\rightarrow$ Valida que el ID no esté vacío y que no se supere el límite de 500 pistas (RN-010).
 3. **Finalización**: `.build()` $\rightarrow$ Verifica que el nombre haya sido asignado y devuelve el objeto `Playlist` inmutable.
 
 ### 🛠️ Trazabilidad de Reglas de Negocio
-- **RN-002 (Límites de nombre)**: Validada en `with_name()`.
-- **RN-003 (Orden propio)**: Implementado en el método `Playlist.reordered()`.
+- **RF-013 (Nombre de la playlist)**: Validado en `with_name()` (entre 1 y `max_name_length`).
+- **RF-015 (Reordenar)**: Implementado en el método `Playlist.reordered()`.
 - **RN-010 (Máximo de pistas)**: Validado en `add_track()`.
