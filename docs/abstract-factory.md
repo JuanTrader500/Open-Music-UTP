@@ -5,44 +5,6 @@ El catálogo necesita hablar con un proveedor de música, pero el SRS pide poder
 (riesgo R-02) y probar sin gastar cuota (RNF-033, RNF-024). Además, los clientes del proveedor forman una **familia**:
 búsqueda, detalles y playlists deben venir del mismo proveedor y compartir configuración.
 
-## Solución
-```mermaid
-classDiagram
-    class MusicProviderFactory {
-        <<abstract>>
-        +create_search_client() SearchClient
-        +create_video_details_client() VideoDetailsClient
-        +create_playlist_client() PlaylistClient
-    }
-    class YouTubeProviderFactory
-    class SimulatedProviderFactory
-    class SearchClient { <<abstract>> +search(query, max_results) }
-    class VideoDetailsClient { <<abstract>> +get_details(video_ids) }
-    class PlaylistClient { <<abstract>> +list_video_ids(playlist_id, max_items) }
-    class YouTubeSearchClient
-    class YouTubeVideoDetailsClient
-    class YouTubePlaylistClient
-    class SimulatedSearchClient
-    class SimulatedVideoDetailsClient
-    class SimulatedPlaylistClient
-    class MusicProvider
-
-    MusicProviderFactory <|-- YouTubeProviderFactory
-    MusicProviderFactory <|-- SimulatedProviderFactory
-    SearchClient <|-- YouTubeSearchClient
-    SearchClient <|-- SimulatedSearchClient
-    VideoDetailsClient <|-- YouTubeVideoDetailsClient
-    VideoDetailsClient <|-- SimulatedVideoDetailsClient
-    PlaylistClient <|-- YouTubePlaylistClient
-    PlaylistClient <|-- SimulatedPlaylistClient
-    YouTubeProviderFactory ..> YouTubeSearchClient : crea
-    YouTubeProviderFactory ..> YouTubeVideoDetailsClient : crea
-    YouTubeProviderFactory ..> YouTubePlaylistClient : crea
-    SimulatedProviderFactory ..> SimulatedSearchClient : crea
-    SimulatedProviderFactory ..> SimulatedVideoDetailsClient : crea
-    SimulatedProviderFactory ..> SimulatedPlaylistClient : crea
-    MusicProvider --> MusicProviderFactory : usa (abstracta)
-```
 
 ## Correspondencia con el patrón
 | Rol del patrón | Clase | Archivo |

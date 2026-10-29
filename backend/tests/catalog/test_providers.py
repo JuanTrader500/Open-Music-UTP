@@ -33,10 +33,13 @@ def test_registry_returns_abstract_factory_subtypes():
 
 
 def test_simulated_flow_filters_non_embeddable_and_keeps_order():
-    provider = MusicProvider(SimulatedProviderFactory())
-    assert [t.video_id for t in provider.search_tracks("cafeteros")] == ["sim_rock_01", "sim_rock_02"]
+    provider = MusicProvider(SimulatedProviderFactory(Settings()))
+    assert [t.track_id for t in provider.search_tracks("cafeteros")] == [
+        "sim_rock_01",
+        "sim_rock_02",
+    ]
     salsa = provider.import_playlist("PL_SIM_SALSA")
-    assert [t.video_id for t in salsa] == ["sim_salsa_01", "sim_salsa_02"]  # sin la no embebible
+    assert [t.track_id for t in salsa] == ["sim_salsa_01", "sim_salsa_02"]  # sin la no embebible
 
 
 def test_short_query_is_rejected_without_calling_provider():
@@ -54,16 +57,29 @@ def test_youtube_family_with_fake_resource():
     }
     resource.videos.return_value.list.return_value.execute.return_value = {
         "items": [
-            {"id": "a", "snippet": {"title": "A", "channelTitle": "Art", "thumbnails": {"high": {"url": "u"}}},
-             "contentDetails": {"duration": "PT3M"}, "statistics": {"viewCount": "10"},
-             "status": {"embeddable": True}},
-            {"id": "b", "snippet": {"title": "B", "channelTitle": "Art"},
-             "contentDetails": {"duration": "PT1M"}, "statistics": {}, "status": {"embeddable": True}},
+            {
+                "id": "a",
+                "snippet": {
+                    "title": "A",
+                    "channelTitle": "Art",
+                    "thumbnails": {"high": {"url": "u"}},
+                },
+                "contentDetails": {"duration": "PT3M"},
+                "statistics": {"viewCount": "10"},
+                "status": {"embeddable": True},
+            },
+            {
+                "id": "b",
+                "snippet": {"title": "B", "channelTitle": "Art"},
+                "contentDetails": {"duration": "PT1M"},
+                "statistics": {},
+                "status": {"embeddable": True},
+            },
         ]
     }
     provider = MusicProvider(YouTubeProviderFactory(Settings(), resource=resource))
     tracks = provider.search_tracks("rock")
-    assert [t.video_id for t in tracks] == ["b", "a"]  # orden de search.list
+    assert [t.track_id for t in tracks] == ["b", "a"]  # orden de search.list
     assert tracks[1].duration_s == 180 and tracks[1].thumbnail_url == "u"
     kwargs = resource.search.return_value.list.call_args.kwargs
     assert kwargs["videoCategoryId"] == "10" and kwargs["videoEmbeddable"] == "true"

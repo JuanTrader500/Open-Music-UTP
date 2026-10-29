@@ -1,4 +1,5 @@
 """Conversión de las respuestas JSON de YouTube a `TrackMetadata`."""
+
 from __future__ import annotations
 
 import re
@@ -34,7 +35,7 @@ def map_video_item(item: dict[str, Any]) -> TrackMetadata:
     stats = item.get("statistics", {})
     status = item.get("status", {})
     return TrackMetadata(
-        video_id=item["id"],
+        track_id=item["id"],
         title=snippet.get("title", ""),
         channel_title=snippet.get("channelTitle", ""),
         duration_s=parse_iso8601_duration(item.get("contentDetails", {}).get("duration", "")),

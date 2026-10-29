@@ -1,3 +1,3 @@
-"""Asignación de género por origen: semilla > artista > categoría YouTube > sin clasificar (RF-011)"""
+"""Asignación de género por origen: semilla > artista > categoría > sin clasificar."""
 
 # TODO (RF-010, RF-011)

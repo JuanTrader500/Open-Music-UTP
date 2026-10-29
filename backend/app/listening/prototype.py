@@ -1,54 +1,42 @@
-"""Prototype para RF-023/RF-024 (ESC-04).
+"""Prototype para registros de escucha (RF-023, RF-024).
 
-Miles de registros de escucha con la misma forma (incluida simulación RF-028).
-Clonar un prototipo es más barato que reconstruir y evita aliasing de estado.
-RN-005: omitida si segundos < 30. RN-006: agregación por género/artista.
+Muchos registros comparten la misma forma (incluida la simulación). Clonar un
+prototipo es más barato que reconstruir y evita compartir estado mutable.
+El umbral de omisión se recibe como parámetro (RN-005).
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-SKIPPED_THRESHOLD_S = 30  # RN-005
+from dataclasses import dataclass, replace
 
 
 @dataclass
 class ListeningRecord:
+    """Evento de escucha de una pista por un usuario.
+
+    Es mutable a propósito: el patrón Prototype lo clona y luego ajusta campos
+    (por ejemplo `seconds_listened`) para simular escuchas sin recrear el objeto.
+    """
+
     user_id: str
-    video_id: str
+    track_id: str
     seconds_listened: int
     genre: str = "sin clasificar"
     artist: str = ""
 
     def __post_init__(self) -> None:
+        """Valida los campos obligatorios y los valores no negativos."""
         if not self.user_id.strip():
-            raise ValueError("user_id obligatorio (RF-023)")
-        if not self.video_id.strip():
-            raise ValueError("video_id obligatorio (RF-023)")
+            raise ValueError("El usuario es obligatorio (RF-023).")
+        if not self.track_id.strip():
+            raise ValueError("La pista es obligatoria (RF-023).")
         if self.seconds_listened < 0:
-            raise ValueError("seconds_listened no puede ser negativo")
+            raise ValueError("Los segundos escuchados no pueden ser negativos.")
 
-    @property
-    def skipped(self) -> bool:
-        """RN-005: pista omitida si se escuchó menos de 30 s."""
-        return self.seconds_listened < SKIPPED_THRESHOLD_S
+    def is_skipped(self, threshold_s: int) -> bool:
+        """RN-005: la pista se considera omitida si se escuchó menos del umbral."""
+        return self.seconds_listened < threshold_s
 
-    def clone(self, **overrides) -> "ListeningRecord":
-        """Prototype: copia profunda con cambios puntuales.
-
-        Ejemplo: prototipo.clone(user_id="u2", video_id="sim_rock_02")
-        """
-        data = {
-            "user_id": self.user_id,
-            "video_id": self.video_id,
-            "seconds_listened": self.seconds_listened,
-            "genre": self.genre,
-            "artist": self.artist,
-        }
-        data.update(overrides)
-        return ListeningRecord(
-            user_id=data["user_id"],
-            video_id=data["video_id"],
-            seconds_listened=data["seconds_listened"],
-            genre=data["genre"],
-            artist=data["artist"],
-        )
+    def clone(self, **overrides) -> ListeningRecord:
+        """Devuelve una copia independiente con los cambios indicados."""
+        return replace(self, **overrides)

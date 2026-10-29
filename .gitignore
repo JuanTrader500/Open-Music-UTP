@@ -9,4 +9,12 @@ dist/
 .idea/
 .vscode/
 *.egg-info/
-opencode/
+/opencode
+/.opencode/
+dataBase/*.dump
+dataBase/*.backup
+dataBase/*.sql.gz
+dataBase/backups/
+.coverage
+htmlcov/
+coverage.xml
