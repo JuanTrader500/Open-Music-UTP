@@ -4,7 +4,6 @@ workspace:
 
 localResources:
   collections:
-    - ../backend/postman/Open Music UTP
+    - ../backend/postman/OpenMusicUTP
   environments:
-    - ../backend/postman/local.postman_environment.json
-    - ../backend/postman/Open Music UTP - Local.environment.yaml
+    - ../backend/postman/OpenMusicUTP_Local.environment.yaml
