@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{base_url}}/api/auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "{{run_email}}",
+      "password": "{{run_password}}",
+      "accept_privacy": true
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("409", () => pm.response.to.have.status(409));
+      pm.test("EMAIL_TAKEN", () => pm.expect(pm.response.json().code).to.eql("EMAIL_TAKEN"));
+    language: text/javascript
+order: 1000

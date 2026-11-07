@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{base_url}}/api/auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "privacy+{{$timestamp}}@utp.edu.co",
+      "password": "Clave-segura-123",
+      "accept_privacy": false
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("422", () => pm.response.to.have.status(422));
+      pm.test("VALIDATION_ERROR", () => pm.expect(pm.response.json().code).to.eql("VALIDATION_ERROR"));
+    language: text/javascript
+order: 2000

@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{base_url}}/api/auth/account"
+method: DELETE
+headers:
+  Authorization: Bearer {{access_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("204", () => pm.response.to.have.status(204));
+      pm.test("sin cuerpo", () => pm.expect(pm.response.text()).to.eql(""));
+    language: text/javascript
+order: 2000

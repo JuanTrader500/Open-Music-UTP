@@ -1,0 +1,25 @@
+$kind: http-request
+name: Rate limit 6/6
+url: "{{base_url}}/api/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "{{rate_email}}",
+      "password": "Clave-incorrecta-999"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("429", () => pm.response.to.have.status(429));
+      pm.test("RATE_LIMITED", () => pm.expect(pm.response.json().code).to.eql("RATE_LIMITED"));
+      pm.test("Retry-After", () => {
+        const retry = pm.response.headers.get("Retry-After");
+        pm.expect(retry).to.exist;
+        pm.expect(Number(retry)).to.be.above(0);
+      });
+    language: text/javascript
+order: 14000

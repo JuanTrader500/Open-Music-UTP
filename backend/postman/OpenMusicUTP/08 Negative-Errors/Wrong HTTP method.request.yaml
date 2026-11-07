@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{base_url}}/api/auth/login"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("405", () => pm.response.to.have.status(405));
+      pm.test("METHOD_NOT_ALLOWED", () => pm.expect(pm.response.json().code).to.eql("METHOD_NOT_ALLOWED"));
+    language: text/javascript
+order: 7000

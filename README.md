@@ -20,7 +20,27 @@ Proyecto académico de la Universidad Tecnológica de Pereira (UTP). Basado en e
 |---|---|
 | Estructura del repositorio y documentación | Lista |
 | `catalog/providers/` (proveedor de música con **Abstract Factory**) | **Implementado y con pruebas** |
-| Todo lo demás | Esqueleto con TODO (cada archivo indica los RF que le corresponden) |
+| Base ORM de 11 tablas, Alembic y paridad con PostgreSQL | **Implementado y con pruebas** |
+| `auth` (registro, login, JWT, rate limit, privacidad) | **Implementado y con pruebas** |
+| `catalog` (búsqueda, persistencia, géneros, artistas, semillas) | **Implementado y con pruebas** |
+| Postman y guía de demostración en vivo | Lista en [`docs/postman_docs/`](docs/postman_docs/README.md) |
+| `playlists`, `listening`, `recommendations`, `simulation`, `frontend` | Esqueleto con TODO |
+
+## Inicio rápido (API)
+
+```bash
+cd backend
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+alembic check
+python -m app.catalog.seed_importer --all
+uvicorn app.main:app --reload --port 8010
+```
+
+La API queda en `http://localhost:8010/api/docs`. La colección Postman, el
+environment y el guion de demostración están en
+[`docs/postman_docs/`](docs/postman_docs/README.md). El detalle de la Fase 2
+está en [`docs/fase-2-catalogo.md`](docs/fase-2-catalogo.md).
 
 ## Inicio rápido (proveedor de música)
 
