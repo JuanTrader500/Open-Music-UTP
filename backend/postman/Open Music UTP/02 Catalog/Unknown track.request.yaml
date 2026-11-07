@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{base_url}}/api/catalog/tracks/no-existe"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("404", () => pm.response.to.have.status(404));
+      pm.test("TRACK_NOT_FOUND", () => pm.expect(pm.response.json().code).to.eql("TRACK_NOT_FOUND"));
+    language: text/javascript
+order: 8000

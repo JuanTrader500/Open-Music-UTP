@@ -118,3 +118,22 @@ def client(db_session):
     finally:
         login_rate_limiter.clear()
         app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def catalog_genres(db_session):
+    """Géneros mínimos para probar el catálogo sin ejecutar las semillas del SRS."""
+    from app.catalog.models import Genre
+
+    genres = {}
+    for code, name in (
+        ("rock", "Rock"),
+        ("pop", "Pop"),
+        ("salsa", "Salsa"),
+        ("sin_clasificar", "Sin clasificar"),
+    ):
+        genre = Genre(code=code, name=name)
+        db_session.add(genre)
+        genres[code] = genre
+    db_session.flush()
+    return genres

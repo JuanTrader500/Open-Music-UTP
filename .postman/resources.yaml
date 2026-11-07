@@ -1,0 +1,10 @@
+# Use this workspace to collaborate
+workspace:
+  id: 4e0d44d1-634b-4217-8ead-69ddfb17189b
+
+localResources:
+  collections:
+    - ../backend/postman/Open Music UTP
+  environments:
+    - ../backend/postman/local.postman_environment.json
+    - ../backend/postman/Open Music UTP - Local.environment.yaml

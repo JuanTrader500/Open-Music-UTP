@@ -1,0 +1,6 @@
+name: Open Music UTP - Local
+values:
+  - key: base_url
+    value: 'http://localhost:8010'
+  - key: run_password
+    value: Clave-segura-123

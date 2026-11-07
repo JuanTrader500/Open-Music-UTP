@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}/api/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "{{run_email}}",
+      "password": "{{run_password}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("401", () => pm.response.to.have.status(401));
+      pm.test("INVALID_CREDENTIALS", () => pm.expect(pm.response.json().code).to.eql("INVALID_CREDENTIALS"));
+    language: text/javascript
+order: 3000

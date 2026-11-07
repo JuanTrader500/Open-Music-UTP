@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{base_url}}/api/auth/me"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("200", () => pm.response.to.have.status(200));
+      pm.test("mismo usuario", () => pm.expect(body.id).to.eql(pm.collectionVariables.get("user_id")));
+      pm.test("sin password_hash", () => pm.expect(body).to.not.have.property("password_hash"));
+    language: text/javascript
+order: 3000

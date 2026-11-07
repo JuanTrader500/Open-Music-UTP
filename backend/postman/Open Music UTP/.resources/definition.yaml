@@ -1,0 +1,27 @@
+$kind: collection
+description: Colección de pruebas manuales y demostración en vivo del backend.
+variables:
+  run_email: ""
+  user_id: ""
+  access_token: ""
+  track_id: ""
+  catalog_before: "0"
+  rate_email: ""
+scripts:
+  - type: http:afterResponse
+    code: |-
+      pm.test("cabeceras de seguridad", () => {
+        pm.expect(pm.response.headers.get("X-Content-Type-Options")).to.eql("nosniff");
+        pm.expect(pm.response.headers.get("X-Frame-Options")).to.eql("DENY");
+        pm.expect(pm.response.headers.get("Referrer-Policy")).to.eql("no-referrer");
+        pm.expect(pm.response.headers.get("Cache-Control")).to.eql("no-store");
+      });
+
+      pm.test("request id", () => {
+        pm.expect(pm.response.headers.get("X-Request-ID")).to.match(/^[A-Za-z0-9-]{8,64}$/);
+      });
+
+      pm.test("sin password_hash", () => {
+        pm.expect(pm.response.text()).to.not.include("password_hash");
+      });
+    language: text/javascript

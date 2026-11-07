@@ -149,12 +149,12 @@ El `.env` local y `TEST_DATABASE_URL` se ajustaron a ese puerto.
 
 | Comprobación | Resultado |
 |---|---|
-| Pruebas completas | `87 passed` |
-| Cobertura total | 95.65 % (umbral 70 %) |
+| Pruebas completas | `120 passed` |
+| Cobertura total | 93.27 % (umbral 70 %) |
 | Pruebas nuevas de seguridad | 10 |
 | Pruebas nuevas de integración de auth | 14 |
 | `ruff check .` | Sin errores |
-| `ruff format --check .` | 88 archivos formateados |
+| `ruff format --check .` | 93 archivos formateados |
 | `alembic current` | `0323eb7fe24c (head)` |
 | `alembic check` | `No new upgrade operations detected` |
 | Paridad de esquema | Sin diferencias frente a `openmusic`, salvo `alembic_version` |
@@ -166,11 +166,27 @@ El `.env` local y `TEST_DATABASE_URL` se ajustaron a ese puerto.
 |---|---|---|
 | 2026-11-04 | F0 | Base ORM de 11 tablas, Alembic inicial, línea base en la base existente, hash Argon2id, JWT y rate limit. |
 | 2026-11-04 | F1 | 6 endpoints de auth, pruebas unitarias/integración y documentación. Sin `git add` ni commit, a la espera de autorización. |
+| 2026-11-06 | F1-08 | Colección Postman de auth, environment local y README; guía de demostración en `docs/postman_docs/`. |
+| 2026-11-06 | F0-10 | Prueba de paridad ORM ↔ PostgreSQL y documento `docs/decisiones.md`. |
 
-## 11. Pendientes para las siguientes fases
+---
 
-- Fase 2: semillas de géneros/artistas para una base limpia y rutas de catálogo.
+## 11. Cierre de pendientes de Fase 1
+
+- **F1-08:** creada la colección `backend/postman/OpenMusicUTP.postman_collection.json`
+  con las carpetas `00 Health`, `01 Auth`, `02 Catalog`, `08 Negative/Errors` y
+  `07 Privacy`. Incluye encadenamiento de variables y pruebas de contrato.
+- **F0-10:** creada la prueba `backend/tests/unit/test_orm_parity.py`, que valida
+  tablas, columnas, tipos, nulabilidad, claves primarias, claves foráneas,
+  restricciones `CHECK` e índices contra PostgreSQL.
+- **Documentación:** `docs/decisiones.md`, `docs/postman_docs/` y
+  `docs/fase-2-catalogo.md`.
+
+Con estos cambios la suite completa queda en **120 pruebas verdes**.
+
+## 12. Pendientes para las siguientes fases
+
 - Fase 3: playlists y favoritos.
 - Fase 4: escucha y recomendaciones.
 - Fase 5: completar `/api/auth/export` con los datos de los demás módulos.
-- Fase 6: colección de Postman, Newman y ampliación del CI.
+- Fase 6: colección de las 31 rutas y Newman en CI.
