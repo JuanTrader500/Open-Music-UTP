@@ -13,8 +13,8 @@ from app.catalog.genres import UNCLASSIFIED_CODE, resolve_genre
 from app.catalog.models import Artist, Genre, Track
 from app.catalog.providers.base import validate_query
 from app.catalog.providers.models import TrackMetadata
-from app.catalog.providers.music_provider import MusicProvider
-from app.catalog.providers.registry import build_provider_factory
+from app.catalog.providers.port import MusicProviderPort
+from app.catalog.providers.registry import get_music_provider
 from app.catalog.repository import CatalogRepository
 from app.catalog.schemas import (
     ArtistListResponse,
@@ -29,6 +29,7 @@ from app.core.exceptions import (
     TrackNotFoundError,
     ValidationFailedError,
 )
+from app.core.transactions import transactional
 
 
 class CatalogService:
@@ -39,15 +40,16 @@ class CatalogService:
         db: Session,
         settings: Settings,
         *,
-        provider: MusicProvider | None = None,
+        provider: MusicProviderPort | None = None,
         repository: CatalogRepository | None = None,
     ) -> None:
         """Recibe la sesión, la configuración y las dependencias inyectables."""
         self.db = db
         self.settings = settings
         self.repository = repository or CatalogRepository(db)
-        self.provider = provider or MusicProvider(build_provider_factory(settings))
+        self.provider = provider or get_music_provider(settings)
 
+    @transactional
     def search(self, query: str, limit: int) -> SearchResponse:
         """Busca canciones, las persiste y devuelve solo las embebibles (RF-010)."""
         cleaned = validate_query(query, self.settings.search_min_chars)
@@ -57,13 +59,8 @@ class CatalogService:
             )
 
         tracks = self.provider.search_tracks(cleaned, limit)
-        try:
-            for track in tracks:
-                self._persist_track(track)
-            self.db.commit()
-        except Exception:
-            self.db.rollback()
-            raise
+        for track in tracks:
+            self._persist_track(track)
 
         views = self.repository.get_track_views([track.track_id for track in tracks])
         items: list[TrackOut] = []
@@ -81,15 +78,11 @@ class CatalogService:
             raise TrackNotFoundError()
         return self._to_track_out(*view)
 
+    @transactional
     def mark_unplayable(self, track_id: str) -> None:
         """Marca una canción como no reproducible (RF-009, RN-012)."""
-        try:
-            if not self.repository.mark_unplayable(track_id):
-                raise TrackNotFoundError()
-            self.db.commit()
-        except Exception:
-            self.db.rollback()
-            raise
+        if not self.repository.mark_unplayable(track_id):
+            raise TrackNotFoundError()
 
     def list_genres(self) -> list[GenreOut]:
         """Lista los géneros de la lista cerrada (RF-011)."""
@@ -123,6 +116,7 @@ class CatalogService:
             offset=offset,
         )
 
+    @transactional
     def import_seed(
         self,
         playlist_id: str,
@@ -136,14 +130,9 @@ class CatalogService:
             raise ValidationFailedError(f"El género {genre_code!r} no existe.")
         limit = max_items if max_items is not None else self.settings.youtube_max_results
         tracks = self.provider.import_playlist(playlist_id, limit)
-        try:
-            self.repository.upsert_genre_seed(playlist_id, genre.id)
-            for track in tracks:
-                self._persist_track(track, seed_genre=genre, preserve_unplayable=False)
-            self.db.commit()
-        except Exception:
-            self.db.rollback()
-            raise
+        self.repository.upsert_genre_seed(playlist_id, genre.id)
+        for track in tracks:
+            self._persist_track(track, seed_genre=genre, preserve_unplayable=False)
         return len(tracks)
 
     def _persist_track(

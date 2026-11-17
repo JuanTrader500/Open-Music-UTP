@@ -1,6 +1,7 @@
 """Importación de playlists semilla del catálogo (RF-011).
 
 Uso:
+    python -m app.catalog.seed_importer --base-only
     python -m app.catalog.seed_importer --all
     python -m app.catalog.seed_importer --playlist PL_SIM_ROCK --genre rock
 
@@ -52,6 +53,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Importa playlists semilla al catálogo (RF-011).",
     )
+    parser.add_argument(
+        "--base-only",
+        action="store_true",
+        help="Solo asegura los géneros y artistas base, sin importar playlists.",
+    )
     parser.add_argument("--all", action="store_true", help="Importa todas las semillas.")
     parser.add_argument("--playlist", help="Identificador de una playlist semilla.")
     parser.add_argument("--genre", help="Código de género de la playlist indicada.")
@@ -67,8 +73,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     """Ejecuta la importación y devuelve el código de salida del proceso."""
     args = build_parser().parse_args(argv)
-    if not args.all and not (args.playlist and args.genre):
-        build_parser().error("Indica --all o --playlist junto con --genre.")
+    if not args.base_only and not args.all and not (args.playlist and args.genre):
+        build_parser().error("Indica --base-only, --all o --playlist junto con --genre.")
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     settings = get_settings()
@@ -78,6 +84,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         ensure_base_catalog(repository)
         session.commit()
         logger.info("Base: %s géneros y %s artistas", len(GENRES), len(ARTISTS))
+        if args.base_only:
+            return 0
 
         service = CatalogService(session, settings)
         if args.all:

@@ -1,1 +1,6 @@
-// TODO: crear la app Vue 3 y montarla en #app (TBD-01).
+import { createApp } from "vue";
+
+import App from "./App.vue";
+import "./styles.css";
+
+createApp(App).mount("#app");

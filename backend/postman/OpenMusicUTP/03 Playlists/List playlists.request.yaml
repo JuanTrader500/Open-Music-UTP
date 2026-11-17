@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{base_url}}/api/playlists"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("200", () => pm.response.to.have.status(200));
+      pm.test("incluye la playlist creada", () => {
+        pm.expect(body.total).to.be.above(0);
+        const ids = body.items.map((playlist) => playlist.id);
+        pm.expect(ids).to.include(pm.collectionVariables.get("playlist_id"));
+      });
+    language: text/javascript
+order: 3520

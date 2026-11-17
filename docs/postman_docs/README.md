@@ -29,7 +29,7 @@ cd backend
 # activa tu entorno Python 3.12 (venv o conda)
 alembic check
 python -m app.catalog.seed_importer --all
-uvicorn app.main:app --reload --port 8010
+uvicorn app.main:app --reload --port 7845
 ```
 
 Abrir Postman, importar la colección y el environment, seleccionar
@@ -41,7 +41,7 @@ Abrir Postman, importar la colección y el environment, seleccionar
 4. `08 Negative/Errors`
 5. `07 Privacy`
 
-> El puerto `8000` puede estar ocupado por otra aplicación. Usa `8010` u `8011`
+> El puerto `8000` puede estar ocupado por otra aplicación. Usa `7845` u `8011`
 > y actualiza `base_url` en el environment.
 
 ## Estado esperado del backend

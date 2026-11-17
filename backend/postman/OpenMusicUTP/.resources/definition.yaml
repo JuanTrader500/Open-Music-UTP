@@ -7,6 +7,9 @@ variables:
   track_id: ""
   catalog_before: "0"
   rate_email: ""
+  playlist_id: ""
+  playlist_track_id: ""
+  playlist_track_ids: "[]"
 scripts:
   - type: http:afterResponse
     code: |-

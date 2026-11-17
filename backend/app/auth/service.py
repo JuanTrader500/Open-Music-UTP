@@ -22,6 +22,7 @@ from app.core.security import (
     login_rate_limiter,
     verify_password,
 )
+from app.core.transactions import transactional
 
 
 class AuthService:
@@ -41,6 +42,7 @@ class AuthService:
         self.repository = repository or AuthRepository(db)
         self.limiter = limiter or login_rate_limiter
 
+    @transactional
     def register(self, data: RegisterRequest) -> User:
         """Crea una cuenta validando correo único y contraseña (RN-004)."""
         normalized_email = data.email.strip().lower()
@@ -60,15 +62,12 @@ class AuthService:
             raise ValidationFailedError(str(exc)) from exc
 
         try:
-            user = self.repository.create(
+            return self.repository.create(
                 email=candidate.email,
                 password_hash=hash_password(data.password),
             )
-            self.db.commit()
         except IntegrityError as exc:
-            self.db.rollback()
             raise EmailTakenError() from exc
-        return user
 
     def login(self, data: LoginRequest, client_ip: str) -> tuple[str, int]:
         """Valida credenciales y devuelve el JWT y su vigencia en segundos."""
@@ -92,7 +91,7 @@ class AuthService:
         """
         return ExportResponse(user=UserResponse.model_validate(user))
 
+    @transactional
     def delete_account(self, user: User) -> None:
         """Elimina la cuenta y sus datos por cascada (RF-022, RN-015)."""
         self.repository.delete(user)
-        self.db.commit()

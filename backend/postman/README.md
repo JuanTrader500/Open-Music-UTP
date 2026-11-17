@@ -10,7 +10,7 @@
 1. Postman → `Import` → seleccionar ambos archivos.
 2. Elegir el environment **Open Music UTP - Local**.
 3. Verificar que `base_url` apunte al backend, por defecto
-   `http://localhost:8010`.
+   `http://localhost:7845`.
 
 ## Preparar el backend
 
@@ -19,7 +19,7 @@ cd ..
 # activa tu entorno Python 3.12 (venv o conda)
 alembic check
 python -m app.catalog.seed_importer --all
-uvicorn app.main:app --reload --port 8010
+uvicorn app.main:app --reload --port 7845
 ```
 
 ## Orden de ejecución
@@ -27,8 +27,9 @@ uvicorn app.main:app --reload --port 8010
 1. `00 Health`
 2. `01 Auth`
 3. `02 Catalog`
-4. `08 Negative/Errors`
-5. `07 Privacy`
+4. `03 Playlists`
+5. `08 Negative/Errors`
+6. `07 Privacy`
 
 Las pruebas de privacidad van al final porque eliminan la cuenta de la demo.
 
@@ -43,6 +44,9 @@ Las pruebas de privacidad van al final porque eliminan la cuenta de la demo.
 | `access_token` | Test de `Login` |
 | `track_id` | Test de `Search` |
 | `catalog_before` | Test de `Search` |
+| `playlist_id` | Test de `Create playlist` |
+| `playlist_track_id` | Test de `Playlist detail` / `Reorder tracks` |
+| `playlist_track_ids` | Test de `Playlist detail` |
 | `rate_email` | Pre-request de `Rate limit 1/6` |
 
 ## Ejecutar con Newman
@@ -59,6 +63,7 @@ npx newman run postman/OpenMusicUTP.postman_collection.json \
 | `00 Health` | `/api/health`, `/api/health/ready` |
 | `01 Auth` | register, login, me, logout, export |
 | `02 Catalog` | genres, artists, search, detail, unplayable |
+| `03 Playlists` | crear, listar, detalle, agregar/quitar canción, duplicado, renombrar, reordenar y borrar con confirmación |
 | `07 Privacy` | export, delete account, login posterior |
 | `08 Negative/Errors` | 401, 404, 405, 409, 422, 429 |
 

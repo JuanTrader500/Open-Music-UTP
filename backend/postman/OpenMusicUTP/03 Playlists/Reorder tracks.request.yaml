@@ -1,0 +1,34 @@
+$kind: http-request
+url: "{{base_url}}/api/playlists/{{playlist_id}}/tracks/order"
+method: PUT
+headers:
+  Authorization: Bearer {{access_token}}
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "playlist_track_ids": {{playlist_track_ids}}
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const current = JSON.parse(pm.collectionVariables.get("playlist_track_ids") || "[]");
+      pm.collectionVariables.set("playlist_track_ids", JSON.stringify(current.slice().reverse()));
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("200", () => pm.response.to.have.status(200));
+      pm.test("posiciones consecutivas", () => {
+        pm.expect(body.tracks.map((track) => track.position)).to.eql([1, 2]);
+      });
+      pm.test("misma pista repetida en ambas posiciones", () => {
+        pm.expect(body.tracks[0].track_id).to.eql(body.tracks[1].track_id);
+      });
+      pm.collectionVariables.set(
+        "playlist_track_id",
+        body.tracks[0].playlist_track_id
+      );
+    language: text/javascript
+order: 3580

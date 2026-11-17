@@ -25,7 +25,7 @@ backend/postman/
 
 | Variable | Valor inicial | Uso |
 |---|---|---|
-| `base_url` | `http://localhost:8010` | URL del backend |
+| `base_url` | `http://localhost:7845` | URL del backend |
 | `run_password` | `Clave-segura-123` | Contraseña de la demo |
 
 ### Colección

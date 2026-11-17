@@ -5,11 +5,11 @@ Duración objetivo: **10–12 minutos**.
 ## Antes de empezar
 
 - [ ] Proyector y Postman abiertos.
-- [ ] `uvicorn` corriendo en el puerto `8010`.
+- [ ] `uvicorn` corriendo en el puerto `7845`.
 - [ ] `base_url` del environment apunta a ese puerto.
 - [ ] Semillas cargadas: `python -m app.catalog.seed_importer --all`.
 - [ ] Pestaña `Test Results` visible.
-- [ ] `curl http://localhost:8010/api/health` responde `{"status":"ok"}`.
+- [ ] `curl http://localhost:7845/api/health` responde `{"status":"ok"}`.
 
 ## Guion minuto a minuto
 

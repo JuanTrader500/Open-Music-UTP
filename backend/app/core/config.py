@@ -31,6 +31,10 @@ class Settings(BaseModel):
     youtube_music_category_id: str = "10"
     youtube_region_code: str | None = None
 
+    # Caché de búsquedas del catálogo (RNF-024)
+    catalog_cache_ttl_s: int = Field(default=300, ge=1)
+    catalog_cache_max_entries: int = Field(default=256, ge=1)
+
     # Registros (RNF-034)
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
 
