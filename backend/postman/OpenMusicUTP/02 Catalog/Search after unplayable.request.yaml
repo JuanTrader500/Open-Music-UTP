@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{base_url}}/api/catalog/search?q=cafeteros&limit=10"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("200", () => pm.response.to.have.status(200));
+      pm.test("la canción marcada ya no aparece", () => {
+        const marked = pm.collectionVariables.get("track_id");
+        pm.expect(body.items.some((track) => track.track_id === marked)).to.eql(false);
+      });
+      pm.test("total disminuyó", () => {
+        pm.expect(body.total).to.be.below(Number(pm.collectionVariables.get("catalog_before")));
+      });
+    language: text/javascript
+order: 6000

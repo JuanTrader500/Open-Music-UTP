@@ -26,6 +26,8 @@ def test_valores_por_defecto():
     settings = Settings()
     assert settings.music_provider == "simulated"
     assert settings.youtube_max_results == 20
+    assert settings.catalog_cache_ttl_s == 300
+    assert settings.catalog_cache_max_entries == 256
     assert settings.log_level == "INFO"
     assert settings.database_url == ""
     assert settings.jwt_secret == ""

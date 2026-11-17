@@ -173,6 +173,6 @@ múltiples lecturas de `.env` y divergencias, y deja una sola puerta de acceso.
 |---|---|---|---|---|---|
 | ESC-01 | RF-010/011 | `TrackMetadata` (familia) | Abstract Factory | `catalog/providers/base.py`, `music_provider.py`, `registry.py` | `tests/catalog/test_providers.py`, `tests/acceptance/test_creational_acceptance.py::test_esc01_*` |
 | ESC-02 | RF-013 | `Playlist` | Builder | `playlists/builder.py` | `test_creational_patterns.py::TestPlaylistBuilder` + `test_esc02_*` |
-| ESC-03 | RF-017/018 | `User` | Factory Method | `auth/factory.py` | `TestUserFactory` + `test_esc03_*` |
+| ESC-03 | RF-017/018 | `User` | Factory Method | `auth/factory.py`, `auth/service.py`, `auth/router.py` | `TestUserFactory`, `test_esc03_*`, `tests/integration/test_auth_endpoints.py` |
 | ESC-04 | RF-023/024 | `ListeningRecord` | Prototype | `listening/prototype.py` | `TestListeningPrototype` + `test_esc04_*` |
 | ESC-05 | — (RNF-031) | Config única | Singleton | `core/singleton.py`, `core/config.py` | `TestSingleton` + `test_esc05_*` |

@@ -1,35 +1,36 @@
 """Builder para crear playlists (RF-013, RF-015, RN-010).
 
 Construcción por pasos con validación incremental: nombre, agregar pistas y
-reordenar. Evita constructores telescópicos y garantiza objetos `Playlist`
+reordenar. Evita constructores telescópicos y garantiza objetos `PlaylistDraft`
 siempre válidos. Los límites llegan como parámetros desde la configuración; el
-Builder no conoce `Settings`. El error de validación es `ValueError` y el
-servicio lo traduce a `ValidationFailedError`.
+Builder no conoce `Settings`. El error de validación es `ValueError` y la
+fachada lo traduce a `ValidationFailedError` o `TrackLimitError`.
 """
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class Playlist:
-    """Playlist inmutable creada por el Builder."""
+class PlaylistDraft:
+    """Borrador inmutable de playlist; no es el modelo ORM `Playlist`."""
 
     owner_id: str
     name: str
     track_ids: tuple[str, ...] = ()
 
-    def reordered(self, from_index: int, to_index: int) -> Playlist:
+    def reordered(self, from_index: int, to_index: int) -> PlaylistDraft:
         """RF-015: devuelve una copia con una pista movida de posición."""
         tracks = list(self.track_ids)
         track = tracks.pop(from_index)
         tracks.insert(to_index, track)
-        return Playlist(owner_id=self.owner_id, name=self.name, track_ids=tuple(tracks))
+        return PlaylistDraft(owner_id=self.owner_id, name=self.name, track_ids=tuple(tracks))
 
 
 class PlaylistBuilder:
-    """Builder fluido de `Playlist` con límites recibidos desde la configuración."""
+    """Builder fluido de `PlaylistDraft` con límites recibidos de la configuración."""
 
     def __init__(self, owner_id: str, *, max_name_length: int, max_tracks: int) -> None:
         """Guarda el propietario y los límites de nombre y de pistas."""
@@ -40,6 +41,27 @@ class PlaylistBuilder:
         self._max_tracks = max_tracks
         self._name = ""
         self._track_ids: list[str] = []
+
+    @classmethod
+    def from_existing(
+        cls,
+        owner_id: str,
+        *,
+        name: str,
+        track_ids: Sequence[str],
+        max_name_length: int,
+        max_tracks: int,
+    ) -> PlaylistBuilder:
+        """Rehidrata una playlist persistida para agregar o quitar pistas.
+
+        Vuelve a pasar por las mismas validaciones que la creación, así el
+        servicio no reconstruye la playlist a mano ni duplica reglas.
+        """
+        builder = cls(owner_id, max_name_length=max_name_length, max_tracks=max_tracks)
+        builder.with_name(name)
+        for track_id in track_ids:
+            builder.add_track(track_id)
+        return builder
 
     def with_name(self, name: str) -> PlaylistBuilder:
         """RF-013: asigna un nombre de entre 1 y `max_name_length` caracteres."""
@@ -61,11 +83,11 @@ class PlaylistBuilder:
         self._track_ids.append(cleaned)
         return self
 
-    def build(self) -> Playlist:
-        """Devuelve la `Playlist`; exige que el nombre esté definido."""
+    def build(self) -> PlaylistDraft:
+        """Devuelve el `PlaylistDraft`; exige que el nombre esté definido."""
         if not self._name:
             raise ValueError("Falta el nombre: llama with_name() antes de build().")
-        return Playlist(
+        return PlaylistDraft(
             owner_id=self._owner_id,
             name=self._name,
             track_ids=tuple(self._track_ids),

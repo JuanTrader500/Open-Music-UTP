@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{base_url}}/api/playlists/{{playlist_id}}/tracks"
+method: POST
+headers:
+  Authorization: Bearer {{access_token}}
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "track_id": "{{track_id}}",
+      "confirm_duplicate": false
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("409", () => pm.response.to.have.status(409));
+      pm.test("código de duplicado", () => {
+        pm.expect(pm.response.json().code).to.eql("DUPLICATE_TRACK");
+      });
+    language: text/javascript
+order: 3540

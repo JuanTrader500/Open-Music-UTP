@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{base_url}}/api/auth/export"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("200", () => pm.response.to.have.status(200));
+      pm.test("claves de privacidad", () => {
+        pm.expect(body).to.have.property("user");
+        pm.expect(body).to.have.property("playlists");
+        pm.expect(body).to.have.property("favorites");
+        pm.expect(body).to.have.property("listening_events");
+        pm.expect(body).to.have.property("preferences");
+      });
+      pm.test("colecciones vacías en Fase 1", () => {
+        pm.expect(body.playlists).to.eql([]);
+        pm.expect(body.favorites).to.eql([]);
+        pm.expect(body.listening_events).to.eql([]);
+      });
+    language: text/javascript
+order: 5000
