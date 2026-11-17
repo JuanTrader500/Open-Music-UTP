@@ -103,15 +103,15 @@ Esperado: 45 géneros, 444 artistas (440 base + 4 simulados) y 7 canciones.
 
 ```bash
 cd backend
-uvicorn app.main:app --reload --port 8010
+uvicorn app.main:app --reload --port 7845
 ```
 
 Verificación:
 
 ```bash
-curl http://localhost:8010/api/health
-curl http://localhost:8010/api/health/ready
-curl http://localhost:8010/api/catalog/genres
+curl http://localhost:7845/api/health
+curl http://localhost:7845/api/health/ready
+curl http://localhost:7845/api/catalog/genres
 ```
 
 Esperado:
@@ -122,9 +122,9 @@ Esperado:
 [{"id":1,"code":"rock","name":"Rock"}, ...]
 ```
 
-Documentación interactiva: <http://localhost:8010/api/docs>.
+Documentación interactiva: <http://localhost:7845/api/docs>.
 
-> Si el puerto `8010` está ocupado, usa `8011` y cambia `base_url` en el
+> Si el puerto `7845` está ocupado, usa `8011` y cambia `base_url` en el
 > environment de Postman.
 
 ## 7. Variables de entorno relevantes

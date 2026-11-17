@@ -77,6 +77,6 @@ alembic check
 pytest -q
 
 # Salud del backend
-curl http://localhost:8010/api/health
-curl http://localhost:8010/api/health/ready
+curl http://localhost:7845/api/health
+curl http://localhost:7845/api/health/ready
 ```

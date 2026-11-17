@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}/api/playlists/{{playlist_id}}"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("200", () => pm.response.to.have.status(200));
+      pm.test("dos pistas ordenadas", () => {
+        pm.expect(body.tracks.length).to.eql(2);
+        pm.expect(body.tracks.map((track) => track.position)).to.eql([1, 2]);
+      });
+      const ids = body.tracks.map((track) => track.playlist_track_id);
+      pm.collectionVariables.set("playlist_track_id", ids[0]);
+      pm.collectionVariables.set("playlist_track_ids", JSON.stringify(ids));
+    language: text/javascript
+order: 3560

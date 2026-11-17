@@ -51,6 +51,20 @@ class TestPlaylistBuilder:
         pl = self._builder().with_name("Mix").add_track("A").add_track("B").add_track("C").build()
         assert pl.reordered(2, 0).track_ids == ("C", "A", "B")
 
+    def test_from_existing_rehydrates_a_persisted_playlist(self):
+        builder = PlaylistBuilder.from_existing(
+            "u1",
+            name="Mix guardado",
+            track_ids=("A", "B"),
+            max_name_length=80,
+            max_tracks=500,
+        )
+
+        draft = builder.add_track("C").build()
+
+        assert draft.name == "Mix guardado"
+        assert draft.track_ids == ("A", "B", "C")
+
 
 class TestUserFactory:
     def test_registered_ok(self):
