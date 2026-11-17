@@ -18,3 +18,4 @@ dataBase/backups/
 .coverage
 htmlcov/
 coverage.xml
+/docs/postman_docs

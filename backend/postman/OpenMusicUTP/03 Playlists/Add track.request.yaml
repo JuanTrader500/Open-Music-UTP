@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{base_url}}/api/playlists/{{playlist_id}}/tracks"
+method: POST
+headers:
+  Authorization: Bearer {{access_token}}
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "track_id": "{{track_id}}",
+      "confirm_duplicate": false
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("201", () => pm.response.to.have.status(201));
+      pm.test("pista agregada", () => {
+        pm.expect(body.total).to.be.above(0);
+        const track = body.tracks[0];
+        pm.expect(track.position).to.eql(1);
+        pm.expect(track.track_id).to.eql(pm.collectionVariables.get("track_id"));
+      });
+    language: text/javascript
+order: 3530

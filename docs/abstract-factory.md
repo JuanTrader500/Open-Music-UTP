@@ -27,10 +27,17 @@ búsqueda, detalles y playlists deben venir del mismo proveedor y compartir conf
 `search.list` = 100 unidades · `videos.list` = 1 unidad por lote de hasta 50 ids · `playlistItems.list` = 1 unidad por página.
 Con 10.000 unidades/día (A-03) caben ~100 búsquedas nuevas al día.
 
-## Demo
+## Uso
+El proveedor se consume desde la API y desde el frontend; no hay un script de demo aparte.
+
 ```bash
-cd backend
-python -m scripts.demo_youtube --provider simulated search rock
-python -m scripts.demo_youtube --provider youtube search "salsa"
-python -m scripts.demo_youtube --provider youtube playlist <ID_DE_PLAYLIST>
+# Con Docker
+docker compose up -d --build
+# Frontend: http://localhost:8956
+# API:      http://localhost:7845/api/docs
+
+# Con el backend local
+curl "http://localhost:7845/api/catalog/search?q=rock&limit=10"
 ```
+
+Las pruebas usan `MUSIC_PROVIDER=simulated`, así que no consumen cuota de YouTube.

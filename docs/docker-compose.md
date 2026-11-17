@@ -1,17 +1,19 @@
 # Docker Compose de Open Music UTP: explicación y cheat sheet
 
-Servicios actuales: **PostgreSQL 16** (`db`) y **pgAdmin 4** (`pgadmin`). Cuando agregues el backend y el frontend, se suman al mismo archivo.
+Servicios actuales: **PostgreSQL 16** (`db`), **FastAPI** (`backend`), **Vue + nginx** (`frontend`) y **pgAdmin 4** (`pgadmin`).
 
 ---
 
 ## 1. Qué levanta
 
-| Servicio | Imagen | Contenedor | Puerto en tu equipo | Para qué sirve |
+| Servicio | Imagen / build | Contenedor | Puerto en tu equipo | Para qué sirve |
 |---|---|---|---|---|
 | `db` | `postgres:16-alpine` | `open-music-db` | `127.0.0.1:5433` | Base de datos del proyecto |
+| `backend` | `./backend` | `open-music-backend` | `127.0.0.1:7845` | API FastAPI, migraciones y seed base |
+| `frontend` | `./frontend` | `open-music-frontend` | `127.0.0.1:8956` | Vue compilado y proxy `/api` con nginx |
 | `pgadmin` | `dpage/pgadmin4` | `open-music-pgadmin` | `http://localhost:8081` | Administrar la base desde el navegador |
 
-El puerto interno de PostgreSQL es 5432. El 5433 solo existe en tu equipo para que no choque con un PostgreSQL local.
+El puerto interno de PostgreSQL es 5432. El 5433 solo existe en tu equipo para que no choque con un PostgreSQL local. Los puertos 7845 y 8956 se eligieron para no chocar con otros contenedores del equipo.
 
 ## 2. Dónde va cada archivo
 
@@ -21,11 +23,19 @@ open-music-utp/
 ├── .env.example         ← plantilla sin claves 
 ├── docker-compose.yml   ← este archivo
 ├── dataBase/
-│   └── schema.sql       ← se carga la primera vez que se crea la base de datos 
+│   └── schema.sql       ← referencia histórica; ya no se monta en el compose
 ├── backend/
+│   ├── Dockerfile
+│   └── docker-entrypoint.sh
 ├── frontend/
+│   ├── Dockerfile
+│   └── nginx.conf
 └── docs/
 ```
+
+El esquema de una base nueva lo crea el backend con Alembic
+(`alembic upgrade head`) al arrancar. `schema.sql` se conserva para consulta y
+para el histórico del proyecto, pero no se ejecuta automáticamente.
 
 
 ## 3. Cómo funciona la persistencia
@@ -52,13 +62,26 @@ Son **volúmenes con nombre**: los administra Docker y viven fuera de los conten
 | `docker volume rm ...` | **No** |
 | `docker volume prune` | **Cuidado: con los contenedores eliminados (`down`) los volúmenes quedan «sin uso» y se pueden borrar** |
 
-### El `schema.sql` se ejecuta una sola vez
+### Migraciones y volúmenes existentes
 
-PostgreSQL ejecuta los scripts de `/docker-entrypoint-initdb.d/` **solo si el volumen de datos está vacío**. Esto tiene consecuencias:
+El backend ejecuta este flujo al arrancar:
 
-- Si modificas `schema.sql` después, **no se vuelve a aplicar** al reiniciar. Para probar el schema desde cero: `docker compose down -v && docker compose up -d` (borra todos los datos).
-- Para cambiar una base que ya tiene datos, aplica un script de migración con `psql` (ver el cheat sheet).
-- Si el `schema.sql` tiene un error en el primer arranque, la base queda vacía y los siguientes arranques ya no vuelven a ejecutarlo. Revisa `docker compose logs db`, corrige el archivo y repite con `docker compose down -v && docker compose up -d`.
+1. Si la base ya tiene tablas (`users`) pero no `alembic_version`, marca el
+   esquema actual con `alembic stamp head`. Es el caso de un volumen creado con
+   `dataBase/schema.sql`.
+2. Ejecuta `alembic upgrade head` para aplicar migraciones pendientes.
+3. Asegura los géneros y artistas base con
+   `python -m app.catalog.seed_importer --base-only`.
+4. Si `SEED_CATALOG=true` y `MUSIC_PROVIDER=simulated`, importa las playlists
+   simuladas.
+
+No necesitas borrar el volumen para actualizar el esquema. Solo usa
+`docker compose down -v` si quieres empezar de cero y perder los datos.
+Revisa el avance con:
+
+```bash
+docker compose logs -f backend
+```
 
 ### Qué guarda pgAdmin
 
@@ -122,13 +145,17 @@ Se importa en el primer arranque, con el volumen de pgAdmin vacío. La contrase�
 ```bash
 cd /home/juan500/Documents/Universidad/patronesDiseño/open-music-utp
 cp .env.example .env              # y edita las claves
-docker compose config             # valida el archivo y muestra las variables ya resueltas
-docker compose up -d              # levanta todo en segundo plano
-docker compose ps                 # esperas ver "healthy" en db
-docker compose logs db | grep -i "01-schema"   # confirma que se ejecutó el schema
+docker compose config --quiet     # valida el archivo sin mostrar secretos
+docker compose up -d --build      # construye backend/frontend y levanta todo
+docker compose ps                 # esperas ver "healthy" en db, backend y frontend
+docker compose logs -f backend    # migraciones y seed base
 ```
 
-Después abre http://localhost:8081.
+Después abre:
+
+- Frontend: <http://localhost:8956>
+- API y Swagger: <http://localhost:7845/api/docs>
+- pgAdmin: <http://localhost:8081>
 
 ---
 
@@ -153,9 +180,11 @@ docker compose config                # validar el archivo y ver las variables re
 
 ```bash
 docker compose ps                                   # estado y salud de cada servicio
+docker compose logs -f backend                      # migraciones, seed y peticiones
+docker compose logs -f frontend                     # nginx
 docker compose logs -f db                           # seguir los logs de la base
 docker compose logs --tail 100 pgadmin              # últimas 100 líneas de pgAdmin
-docker inspect --format '{{.State.Health.Status}}' open-music-db   # healthy / unhealthy / starting
+docker inspect --format '{{.State.Health.Status}}' open-music-backend   # healthy / unhealthy / starting
 docker compose top                                  # procesos de cada contenedor
 docker stats                                        # CPU y memoria en vivo
 ```
@@ -175,7 +204,7 @@ docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SEL
 docker compose exec -T db sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < dataBase/migracion.sql
 
 # desde tu equipo, con psql instalado
-psql -h 127.0.0.1 -p 5433 -U openmusic -d openmusic
+psql -h 127.0.0.1 -p 5433 -U postgres -d openmusic
 ```
 
 Dentro de `psql`:
@@ -248,9 +277,12 @@ Las actualizaciones menores de PostgreSQL 16 son seguras. Para pasar a otra vers
 
 ```bash
 docker compose exec db sh                      # shell dentro del contenedor de la base
+docker compose exec backend sh                 # shell dentro del backend
+docker compose exec frontend sh                # shell dentro de nginx
 docker compose exec pgadmin sh                 # shell dentro de pgAdmin
-ss -tulpn | grep -E '5433|8081'                # ¿hay otro programa usando esos puertos?
-docker compose logs db | grep -iE "error|fatal"   # errores de la base
+ss -tulpn | grep -E '5433|7845|8956|8081'      # ¿hay otro programa usando esos puertos?
+docker compose logs backend | grep -iE "error|fatal"   # errores de migración o API
+docker compose logs db | grep -iE "error|fatal"        # errores de la base
 ```
 
 ---
@@ -260,9 +292,11 @@ docker compose logs db | grep -iE "error|fatal"   # errores de la base
 | Síntoma | Causa probable | Solución |
 |---|---|---|
 | `Define POSTGRES_PASSWORD en el archivo .env` | Falta una variable | Complétala en `.env` y repite el comando |
-| `port is already allocated` | El 5433 o el 8081 están ocupados | Cambia el número de la izquierda en `ports` (por ejemplo `127.0.0.1:5434:5432`) |
-| La base arranca pero no tiene tablas | El volumen ya tenía datos, o el `schema.sql` falló la primera vez | `docker compose logs db`, corrige y ejecuta `docker compose down -v && docker compose up -d` |
-| `db` se queda en `starting` o pasa a `unhealthy` | El `schema.sql` tarda o falló | Revisa `docker compose logs db` |
+| `port is already allocated` | El 5433, 7845, 8956 o 8081 están ocupados | Cambia el número de la izquierda en `ports` (por ejemplo `127.0.0.1:7846:8000`) |
+| El backend no arranca o falla una migración | La base no está lista, falta una variable o el esquema legado no se detectó | `docker compose logs backend`; verifica `DATABASE_URL`, `JWT_SECRET` y que el volumen tenga la tabla `users` |
+| El frontend abre pero las búsquedas dan 502 | El backend no está healthy o nginx no resuelve `backend` | `docker compose ps` y `docker compose logs backend frontend` |
+| La base arranca pero no tiene tablas | Volumen vacío y el backend aún no migró | `docker compose logs backend`; el backend ejecuta `alembic upgrade head` |
+| `db` se queda en `starting` o pasa a `unhealthy` | PostgreSQL aún inicializa o el puerto está ocupado | Revisa `docker compose logs db` |
 | pgAdmin no se conecta a la base | Usaste `localhost` o `5433` | Host `db`, puerto `5432` |
 | pgAdmin rechaza el correo al iniciar | Dominio reservado (por ejemplo `.local`) | Usa un correo con dominio válido en `PGADMIN_DEFAULT_EMAIL` y recrea el volumen de pgAdmin si ya se inicializó |
 | Cambié la clave de pgAdmin en `.env` y sigue la anterior | La clave inicial solo se usa al crear el volumen | Cámbiala desde la interfaz de pgAdmin, o borra `open-music-pgadmin-data` (pierdes los servidores guardados) |
@@ -281,13 +315,25 @@ docker compose logs db | grep -iE "error|fatal"   # errores de la base
 5. **Fija la versión de pgAdmin** (`PGADMIN_TAG`) cuando el proyecto esté estable, para que todos usen la misma.
 6. **Usa `docker compose down` y no `down -v`** salvo que quieras empezar de cero.
 
-## 12. Cuando agregues el backend y el frontend
+## 12. Servicios y red
 
-Se agregan como servicios nuevos en el mismo archivo, conectados a `open-music-net`. Desde el backend, la base se alcanza con el host `db` y el puerto `5432`, por ejemplo `postgresql+psycopg://USUARIO:CLAVE@db:5432/BASE`. Con `depends_on` y `condition: service_healthy` hacia `db`, el backend esperará a que la base esté lista.
+Los cuatro servicios comparten `open-music-net`:
+
+- El backend alcanza PostgreSQL con el host `db` y el puerto `5432`.
+- El frontend alcanza la API con `http://backend:8000` y conserva el prefijo
+  `/api` en el proxy.
+- `depends_on` con `condition: service_healthy` espera a `db` antes del backend
+  y al backend antes del frontend.
+- Solo se publican puertos en `127.0.0.1`; los servicios se hablan por la red
+  interna de Docker.
 
 ## 13. Qué se verificó
 
-- El YAML es válido; define los servicios `db` y `pgadmin`, los dos volúmenes con nombre fijo y la red, y todas las variables que usa están en `.env.example`.
-- Se comprobó con un servidor PostgreSQL 16 de pruebas el comportamiento del healthcheck durante la inicialización: por socket responde, por TCP no, hasta que arranca el servidor definitivo.
-- El `schema.sql` de la v6 se ejecutó antes completo y sin errores en PostgreSQL 16.15.
-- **No se pudo ejecutar Docker en el entorno de trabajo**, así que el compose no se levantó de punta a punta. Valídalo en tu equipo con `docker compose config` y luego `docker compose up -d`. El healthcheck de pgAdmin (`/misc/ping` con `wget`) es el punto que más conviene mirar: si `docker compose ps` lo muestra como `unhealthy` aunque pgAdmin funcione, elimina ese bloque `healthcheck`: ningún otro servicio depende de él.
+- `docker compose config --quiet` valida el YAML y las variables obligatorias.
+- El backend aplica migraciones, detecta volúmenes legados y asegura el catálogo
+  base al arrancar.
+- La suite de backend sigue pasando y el frontend tiene pruebas de cliente,
+  reproductor y componentes.
+- `npm run build` genera el frontend de producción que sirve nginx.
+- Las pruebas del repositorio no llaman a YouTube: usan el proveedor simulado y
+  mocks de la IFrame API.

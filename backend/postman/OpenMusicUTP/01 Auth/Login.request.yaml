@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{base_url}}/api/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "{{run_email}}",
+      "password": "{{run_password}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("200", () => pm.response.to.have.status(200));
+      pm.test("bearer", () => pm.expect(body.token_type).to.eql("bearer"));
+      pm.test("expira en una hora", () => pm.expect(body.expires_in).to.eql(3600));
+      pm.collectionVariables.set("access_token", body.access_token);
+
+      const part = body.access_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+      const payload = JSON.parse(atob(part));
+      pm.test("JWT con sub, iat y exp", () => {
+        pm.expect(payload.sub).to.be.a("string");
+        pm.expect(payload.exp - payload.iat).to.eql(3600);
+      });
+    language: text/javascript
+order: 2000

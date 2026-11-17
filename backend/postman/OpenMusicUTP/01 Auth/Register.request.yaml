@@ -1,0 +1,34 @@
+$kind: http-request
+url: "{{base_url}}/api/auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "{{run_email}}",
+      "password": "{{run_password}}",
+      "accept_privacy": true
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("201", () => pm.response.to.have.status(201));
+      pm.test("correo normalizado", () => pm.expect(body.email).to.eql(body.email.toLowerCase()));
+      pm.test("UUID", () => pm.expect(body.id).to.match(/^[0-9a-f-]{36}$/i));
+      pm.test("fecha ISO", () => pm.expect(new Date(body.created_at).toString()).to.not.eql("Invalid Date"));
+      pm.test("sin datos sensibles", () => {
+        pm.expect(body).to.not.have.property("password");
+        pm.expect(body).to.not.have.property("password_hash");
+      });
+      pm.collectionVariables.set("user_id", body.id);
+      pm.collectionVariables.set("run_email", body.email);
+    language: text/javascript
+  - type: beforeRequest
+    code: |-
+      pm.collectionVariables.set("run_email", `demo+${Date.now()}@utp.edu.co`);
+      pm.collectionVariables.set("run_password", "Clave-segura-123");
+    language: text/javascript
+order: 1000

@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{base_url}}/api/catalog/tracks/{{track_id}}/unplayable"
+method: POST
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("204", () => pm.response.to.have.status(204));
+      pm.test("sin cuerpo", () => pm.expect(pm.response.text()).to.eql(""));
+    language: text/javascript
+order: 5000

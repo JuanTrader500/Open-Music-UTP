@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{base_url}}/api/catalog/tracks/{{track_id}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("200", () => pm.response.to.have.status(200));
+      pm.test("mismo track", () => pm.expect(body.track_id).to.eql(pm.collectionVariables.get("track_id")));
+      pm.test("tiene duración y thumbnail", () => {
+        pm.expect(body.duration_s).to.be.a("number");
+        pm.expect(body.thumbnail_url).to.be.a("string");
+      });
+    language: text/javascript
+order: 4000

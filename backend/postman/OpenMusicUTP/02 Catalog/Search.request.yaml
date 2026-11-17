@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{base_url}}/api/catalog/search?q=cafeteros&limit=10"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      pm.test("200", () => pm.response.to.have.status(200));
+      pm.test("resultados", () => {
+        pm.expect(body).to.have.property("items");
+        pm.expect(body).to.have.property("total");
+        pm.expect(body.query).to.eql("cafeteros");
+        pm.expect(body.items.length).to.be.above(0);
+      });
+      pm.test("solo embebibles", () => {
+        body.items.forEach((track) => pm.expect(track.is_embeddable).to.eql(true));
+      });
+      pm.test("artista y género", () => {
+        const track = body.items[0];
+        pm.expect(track.artist).to.have.property("name");
+        pm.expect(track.genre).to.have.property("code");
+      });
+      pm.collectionVariables.set("track_id", body.items[0].track_id);
+      pm.collectionVariables.set("catalog_before", body.total);
+    language: text/javascript
+order: 3000

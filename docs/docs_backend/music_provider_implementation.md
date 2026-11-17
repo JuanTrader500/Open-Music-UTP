@@ -53,48 +53,53 @@ El flujo de datos desde que se solicita una canción hasta que se obtienen los r
 
 ---
 
-##  Guía de Ejecución y Demostración
+## Guía de ejecución
 
-Para testear la implementación y realizar una demostración de funcionamiento, el proyecto incluye un script especializado.
+El proveedor se consume desde la API; ya no existe un script de demostración aparte.
 
-### 1. Configuración Previa
-Asegúrate de tener un archivo `.env` en la raíz con las siguientes variables:
+### 1. Configuración previa
+
+Asegúrate de tener un archivo `.env` en la raíz con las variables del proveedor:
+
 ```env
 MUSIC_PROVIDER=youtube
 YOUTUBE_API_KEY=TU_API_KEY_AQUÍ
 ```
 
-### 2. Ejecución de la Demo
-Desde la carpeta `backend/`, ejecuta los siguientes comandos según lo que desees demostrar:
+Para probar sin cuota usa `MUSIC_PROVIDER=simulated`.
 
-#### A. Búsqueda Real en YouTube
-Busca canciones reales utilizando la API de YouTube:
+### 2. Búsqueda desde la API
+
+Con Docker:
+
 ```bash
-python -m scripts.demo_youtube --provider youtube search "Salsa Clasica"
+docker compose up -d --build
+curl "http://localhost:7845/api/catalog/search?q=rock&limit=10"
 ```
 
-#### B. Búsqueda Simulada
-Demuestra la flexibilidad del patrón cambiando al proveedor simulado (no requiere API Key):
+Con el backend local:
+
 ```bash
-python -m scripts.demo_youtube --provider simulated search "Rock"
+cd backend
+uvicorn app.main:app --reload --port 7845
+curl "http://localhost:7845/api/catalog/search?q=rock&limit=10"
 ```
 
-#### C. Importación de Playlist
-Carga los videos de una playlist específica de YouTube:
+La respuesta incluye `track_id`, título, artista, género, duración y
+`thumbnail_url`; el frontend usa esos campos para mostrar tarjetas y reproducir
+el video con la IFrame API.
+
+### 3. Pruebas
+
 ```bash
-python -m scripts.demo_youtube --provider youtube playlist <ID_DE_LA_PLAYLIST>
+cd backend
+pytest
 ```
 
-###  Flujo de Llamada en la Demo
-`demo_youtube.py` $\rightarrow$ `build_provider_factory()` $\rightarrow$ `YouTubeProviderFactory` $\rightarrow$ `YouTubeSearchClient` $\rightarrow$ **API YouTube**
+Las pruebas usan la familia simulada y no llaman a YouTube.
 
+### Flujo de llamada
 
-
-## Ejemplos para la demostracion:
-
-Busqueda con nombre exato:
-    - python -m scripts.demo_youtube --provider youtube search "romantika brutalismus 3000"
-
-Test del youtube engine serch 
-
-    - python -m scripts.demo_youtube --provider youtube search "brutalismus 3000 romanticas"
+`CatalogService` $\rightarrow$ `build_music_provider()` $\rightarrow$
+`CachedMusicProvider` $\rightarrow$ `MusicProvider` $\rightarrow$
+`YouTubeProviderFactory` $\rightarrow$ `YouTubeAdapter` $\rightarrow$ **API YouTube**

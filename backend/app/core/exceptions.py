@@ -113,6 +113,14 @@ class DuplicateTrackError(MusicAppError):
     default_message = "La canción ya está en la playlist."
 
 
+class ConfirmationRequiredError(MusicAppError):
+    """La acción destructiva requiere confirmación explícita (RF-015)."""
+
+    code = "CONFIRMATION_REQUIRED"
+    http_status = 409
+    default_message = "La acción requiere confirmación."
+
+
 class PlaylistLimitError(MusicAppError):
     """El usuario alcanzó el máximo de playlists (RN-010)."""
 

@@ -6,3 +6,5 @@ google-api-python-client==2.201.0
 SQLAlchemy==2.0.55
 psycopg[binary]==3.3.6
 alembic==1.20.0
+PyJWT==2.15.1
+argon2-cffi==25.1.0
